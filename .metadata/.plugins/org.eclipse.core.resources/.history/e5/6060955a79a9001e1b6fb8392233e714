@@ -309,7 +309,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-ngfhgfghfhg
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
