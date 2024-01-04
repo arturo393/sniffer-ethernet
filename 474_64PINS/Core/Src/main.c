@@ -92,6 +92,9 @@ GPIO_PinState LB; // PA5
 
 uint8_t c=0;
 uint16_t RxXferdif=0;
+uint8_t set1 = 0;
+uint8_t set2 = 0;
+uint8_t time1, time2, timeNow, timeDiff;
 
 uint8_t gar[] = {192,168,0,1};
 uint8_t sub_r[] = {255,255,255,0};
@@ -286,8 +289,28 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// Read received data from UART1
+	/*
 	c=1;
 	HAL_UART_Receive_IT(huart,re, 50);
+	*/
+	uint8_t *data = s->serial_lora->data;
+		//uint8_t len;
+		//&len =&( s->serial->len);
+		s->serial_lora->len++;
+		/*
+		if (len >= UART_SIZE-1) {
+				s->serial->len = 0;
+				s->serial_lora->isReceivedDataReady = true;
+				memset(data, 0, UART_SIZE);
+		}
+		HAL_UART_Receive_IT(s->serial->handler, s->serial->data+s->serial->len, 1);
+		*/
+		//processReceived(s);
+	//	HAL_UART_Receive_IT(huart,re, 50);
+		HAL_UART_Receive_IT(s->serial_lora->handler, s->serial_lora->data + s->serial_lora->len, 1);
+		s->serial_lora->isReceivedDataReady = true;
+
+
 }
 
 
@@ -347,7 +370,7 @@ int main(void)
 
 
 	s = sniffer(&hi2c3, adcMA);
-	s->serial = uart(&huart1);
+	s->serial_lora = uart(&huart1);
 	s->lora = loRa_Init( &hspi1,&hspi2);
 
 	readEepromData(s, SPREAD_FACTOR);
@@ -356,11 +379,13 @@ int main(void)
 	readEepromData(s, UPLINK);
 	readEepromData(s, DOWNLINK);
 
-	s->lora->bw = LORABW_62_5KHZ;
+	s->lora->bw = LORABW_125KHZ;
 	s->lora->dfreq = 153000000;
 	s->lora->ufreq = 172000000;
-	s->lora->sf = SF_10;
+	s->lora->sf = SF_7;
 	s->lora->cr = LORA_CR_4_5;
+	s->id = 8;
+
 
 	// lora config
 	writeCommon(s->lora->txhw);
@@ -388,10 +413,11 @@ int main(void)
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // NRE485
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, 0); // NTE485
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, 0); // LB
-	HAL_UART_Receive_IT(&huart1, re, 50);
+	//HAL_UART_Receive_IT(&huart1, re, 50); sacado
 	sw = HAL_GPIO_ReadPin(DIN2_GPIO_Port, DIN2_Pin);
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, sw); // S485_N232
+	HAL_UART_Receive_IT(s->serial_lora->handler, s->serial_lora->data, 1);
 
 	//SPI ETHERNET
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1); // CS HIGH DISABLE
@@ -666,21 +692,28 @@ int main(void)
 	transmitir_recibir_spi(buffer_t, 3, buffer3, 240);
 */
 //----------------------------------------------------------------
-	s->dOut_switch = HAL_GPIO_ReadPin(current_out_select_GPIO_Port, current_out_select_Pin);
-	s->dIn_switch = HAL_GPIO_ReadPin(current_in_select_GPIO_Port, current_in_select_Pin);
-	s->dIn = HAL_GPIO_ReadPin(DIN_GPIO_Port, DIN_Pin);
+	s->swOut_x_20mA = HAL_GPIO_ReadPin(SWOUT_X_20MA_GPIO_Port, SWOUT_X_20MA_Pin); //SWOUT_X_20MA_GPIO_Port, SWOUT_X_20MA_Pin
+	s->swIn_x_20mA = HAL_GPIO_ReadPin(SWIN_X_20MA_GPIO_Port, SWIN_X_20MA_Pin); // SWIN_X_20MA_GPIO_Port, SWIN_X_20MA_Pin
+	s->dIn1 = HAL_GPIO_ReadPin(DIN1_GPIO_Port, DIN1_Pin);
 	s->dIn2 = HAL_GPIO_ReadPin(DIN2_GPIO_Port, DIN2_Pin);
+	s->swSerial = HAL_GPIO_ReadPin(SWSERIAL_GPIO_Port, SWSERIAL_Pin); //agregado
 
 	/*
 	HAL_GPIO_WritePin(DOUT_GPIO_Port, DOUT_Pin, s->dOut);   // DOUT 1
 	HAL_GPIO_WritePin(DOUT2_GPIO_Port, DOUT2_Pin, s->dOut2);   // DOUT 2
 	*/
-	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut1); // 0-10V HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut1);
-	HAL_DAC_SetValue(&hdac2, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut2);
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut1_0_10V); // 0-10V HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut1);
+	HAL_DAC_SetValue(&hdac2, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut2_x_20mA);
+
+	//HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut1); // 0-10V HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut1);
+	//HAL_DAC_SetValue(&hdac2, DAC_CHANNEL_1, DAC_ALIGN_12B_R, s->aOut2);
 	adcValues[0] = adc_result[0];
 	adcValues[1] = adc_result[1];
-	s->aIn1 = adcMA[0];
-	s->aIn2 = adcMA[1];
+	//s->aIn1 = adcMA[0];
+	//s->aIn2 = adcMA[1];
+	s->aIn1_0_10V = adcMA[0];
+	s->aIn2_x_20mA = adcMA[1];
+
 
 
 	//------------------------------- TRANSMISION -----------------------------------------------------------------
@@ -690,7 +723,7 @@ int main(void)
 	sw = HAL_GPIO_ReadPin(DIN2_GPIO_Port, DIN2_Pin);
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, sw); // S485_N232
-
+c=0;
 	if(c == 1){
 		sprintf(re2,re);
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 1); // DE485_F232
@@ -1236,6 +1269,9 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, H_F_Pin|TE485_Pin|DOUT2_Pin|BUSSY_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|KA_Pin|SWSERIAL_Pin|GPIO_PIN_12
+                           |SPI1_NSS_Pin, GPIO_PIN_RESET);
+
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
@@ -1267,8 +1303,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : NINT_W5500_Pin PC1 DIN2_Pin current_out_select_Pin
                            current_in_select_Pin DIO1_2_Pin DIO3_2_Pin */
-  GPIO_InitStruct.Pin = NINT_W5500_Pin|GPIO_PIN_1|DIN2_Pin|current_out_select_Pin
-                          |current_in_select_Pin|DIO1_2_Pin|DIO3_2_Pin;
+  GPIO_InitStruct.Pin = NINT_W5500_Pin|GPIO_PIN_1|DIN2_Pin|current_out_select_Pin|current_in_select_Pin|DIO1_2_Pin|DIO3_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -1283,17 +1318,20 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  //GPIO_InitStruct.Pin = GPIO_PIN_5; sacado
+  /*Configure GPIO pin : SWSERIAL_Pin */
+   GPIO_InitStruct.Pin = SWSERIAL_Pin;
+
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(SWSERIAL_GPIO_Port, &GPIO_InitStruct); //GPIOA
 
-  /*Configure GPIO pin : DIN_Pin */
-  GPIO_InitStruct.Pin = DIN_Pin;
+  /*Configure GPIO pin : DIN_Pin1 */
+  GPIO_InitStruct.Pin = DIN1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(DIN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(DIN1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DOUT_Pin BUSSY_1_Pin LORA_TX_Pin NRST_LORA_1_Pin
                            DIO1_1_Pin DIO3_1_Pin PB6 PB7 */

@@ -1,0 +1,102 @@
+16:28:52 **** Build of configuration Debug for project 474_64PINS ****
+make -j4 all 
+arm-none-eabi-gcc "../Core/Src/SX1278.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/SX1278.d" -MT"Core/Src/SX1278.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/SX1278.o"
+arm-none-eabi-gcc "../Core/Src/k24c02.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/k24c02.d" -MT"Core/Src/k24c02.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/k24c02.o"
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc "../Core/Src/rdss.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/rdss.d" -MT"Core/Src/rdss.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/rdss.o"
+../Core/Src/main.c: In function 'HAL_UART_RxCpltCallback':
+../Core/Src/main.c:296:18: warning: unused variable 'data' [-Wunused-variable]
+  296 |         uint8_t *data = s->serial_lora->data;
+      |                  ^~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:402:17: warning: pointer targets in passing argument 1 of 'sprintf' differ in signedness [-Wpointer-sign]
+  402 |         sprintf(dato,"RS485");
+      |                 ^~~~
+      |                 |
+      |                 uint8_t * {aka unsigned char *}
+In file included from ../Core/Inc/rdss.h:14,
+                 from ../Core/Inc/sniffer.h:13,
+                 from ../Core/Src/main.c:25:
+C:\ST\STM32CubeIDE_1.14.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\tools\bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/include/stdio.h:254:18: note: expected 'char * restrict' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  254 | int     sprintf (char *__restrict, const char *__restrict, ...)
+      |                  ^
+../Core/Src/main.c:403:17: warning: pointer targets in passing argument 1 of 'sprintf' differ in signedness [-Wpointer-sign]
+  403 |         sprintf(dato2,"RS232");
+      |                 ^~~~~
+      |                 |
+      |                 uint8_t * {aka unsigned char *}
+In file included from ../Core/Inc/rdss.h:14,
+                 from ../Core/Inc/sniffer.h:13,
+                 from ../Core/Src/main.c:25:
+C:\ST\STM32CubeIDE_1.14.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\tools\bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/include/stdio.h:254:18: note: expected 'char * restrict' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  254 | int     sprintf (char *__restrict, const char *__restrict, ...)
+      |                  ^
+../Core/Src/main.c:728:25: warning: pointer targets in passing argument 1 of 'sprintf' differ in signedness [-Wpointer-sign]
+  728 |                 sprintf(re2,re);
+      |                         ^~~
+      |                         |
+      |                         uint8_t * {aka unsigned char *}
+In file included from ../Core/Inc/rdss.h:14,
+                 from ../Core/Inc/sniffer.h:13,
+                 from ../Core/Src/main.c:25:
+C:\ST\STM32CubeIDE_1.14.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\tools\bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/include/stdio.h:254:18: note: expected 'char * restrict' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  254 | int     sprintf (char *__restrict, const char *__restrict, ...)
+      |                  ^
+../Core/Src/main.c:728:29: warning: pointer targets in passing argument 2 of 'sprintf' differ in signedness [-Wpointer-sign]
+  728 |                 sprintf(re2,re);
+      |                             ^~
+      |                             |
+      |                             uint8_t * {aka unsigned char *}
+In file included from ../Core/Inc/rdss.h:14,
+                 from ../Core/Inc/sniffer.h:13,
+                 from ../Core/Src/main.c:25:
+C:\ST\STM32CubeIDE_1.14.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\tools\bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/include/stdio.h:254:36: note: expected 'const char * restrict' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  254 | int     sprintf (char *__restrict, const char *__restrict, ...)
+      |                                    ^
+../Core/Src/main.c:402:28: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+  402 |         sprintf(dato,"RS485");
+      |                            ^
+../Core/Src/main.c:402:9: note: 'sprintf' output 6 bytes into a destination of size 5
+  402 |         sprintf(dato,"RS485");
+      |         ^~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:403:29: warning: 'sprintf' writing a terminating nul past the end of the destination [-Wformat-overflow=]
+  403 |         sprintf(dato2,"RS232");
+      |                             ^
+../Core/Src/main.c:403:9: note: 'sprintf' output 6 bytes into a destination of size 5
+  403 |         sprintf(dato2,"RS232");
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc "../Core/Src/sniffer.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/sniffer.d" -MT"Core/Src/sniffer.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/sniffer.o"
+arm-none-eabi-gcc "../Core/Src/stm32g4xx_hal_msp.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32g4xx_hal_msp.d" -MT"Core/Src/stm32g4xx_hal_msp.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/stm32g4xx_hal_msp.o"
+arm-none-eabi-gcc "../Core/Src/stm32g4xx_it.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32g4xx_it.d" -MT"Core/Src/stm32g4xx_it.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/stm32g4xx_it.o"
+arm-none-eabi-gcc "../Core/Src/uart1.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32G474xx -c -I../Core/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc -I../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32G4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/uart1.d" -MT"Core/Src/uart1.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/uart1.o"
+../Core/Src/sniffer.c: In function 'sniffer':
+../Core/Src/sniffer.c:29:31: warning: assignment to 'uint16_t' {aka 'short unsigned int'} from 'uint16_t *' {aka 'short unsigned int *'} makes integer from pointer without a cast [-Wint-conversion]
+   29 |                 s->aIn1_0_10V = adcBuffer + VOLTAGE0_10V_CH;
+      |                               ^
+../Core/Src/sniffer.c:30:32: warning: assignment to 'uint16_t' {aka 'short unsigned int'} from 'uint16_t *' {aka 'short unsigned int *'} makes integer from pointer without a cast [-Wint-conversion]
+   30 |                 s->aIn2_x_20mA = adcBuffer + SENSOR0_20mA_CH;
+      |                                ^
+../Core/Src/sniffer.c:31:32: warning: assignment to 'uint16_t' {aka 'short unsigned int'} from 'uint16_t *' {aka 'short unsigned int *'} makes integer from pointer without a cast [-Wint-conversion]
+   31 |                 s->aIn2_x_20mA = adcBuffer + SENSOR4_20mACH;
+      |                                ^
+../Core/Src/sniffer.c: In function 'processReceivedLoRa':
+../Core/Src/sniffer.c:163:21: warning: unused variable 'time' [-Wunused-variable]
+  163 |                 int time = timeEnd - timeStart;
+      |                     ^~~~
+../Core/Src/sniffer.c:125:17: warning: unused variable 'base' [-Wunused-variable]
+  125 |         uint8_t base = readReg(hw, LR_RegFifoRxCurrentaddr);
+      |                 ^~~~
+../Core/Src/sniffer.c:124:17: warning: unused variable 'zero' [-Wunused-variable]
+  124 |         uint8_t zero = 0x00;
+      |                 ^~~~
+arm-none-eabi-gcc -o "474_64PINS.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Alfonso\sniffer-ethernet\474_64PINS\STM32G474RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="474_64PINS.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 474_64PINS.elf
+ 
+arm-none-eabi-size  474_64PINS.elf 
+arm-none-eabi-objdump -h -S 474_64PINS.elf  > "474_64PINS.list"
+   text	   data	    bss	    dec	    hex	filename
+  52848	    156	  12436	  65440	   ffa0	474_64PINS.elf
+Finished building: default.size.stdout
+ 
+Finished building: 474_64PINS.list
+ 

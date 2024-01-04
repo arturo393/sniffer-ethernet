@@ -97,7 +97,7 @@ void writeReg(SX1276_HW_t *hw, uint8_t address, const uint8_t *cmd,
 	HAL_GPIO_WritePin(hw->nssPort, hw->nssPin, GPIO_PIN_SET); // pull the pin high
 	if (res != HAL_OK)
 		Error_Handler();
-	HAL_Delay(10);
+	//HAL_Delay(10);
 }
 
 void setRFFrequencyReg(SX1278_t *module) {
@@ -312,10 +312,17 @@ void writeCommon(SX1276_HW_t *hw) {
 	}
 }
 
+void restartRegFifoAddrPtr(SX1276_HW_t *hw) {
+	uint8_t zero = 0;
+	writeReg(hw, LR_RegOpMode, &LORA_SLEEP_MODE, 1);
+	HAL_Delay(15);
+	writeReg(hw, LR_RegFifoAddrPtr, &zero, 1);
+}
+
 void startRxContinuous(SX1276_HW_t *hw, uint8_t payloadLength) {
 	uint8_t addr = 0;
 	writeReg(hw, LR_RegOpMode, &(LORA_SLEEP_MODE), 1);
-	writeReg(hw, LR_RegPayloadLength, &(payloadLength), 1); //RegPayloadLength 21byte
+	//writeReg(hw, LR_RegPayloadLength, &(payloadLength), 1); //RegPayloadLength 21byte
 	writeReg(hw, LR_RegFifoAddrPtr, &addr, 1); //RegFifoAddrPtr
 	writeReg(hw, LR_RegOpMode, &(LORA_RX_CONTINUOUS_MODE), 1);
 
@@ -333,6 +340,7 @@ uint8_t readWhenDataArrive(LORA_t *loRa) {
 //flags = readReg(hw,LR_RegIrqFlags );
 	writeReg(hw, LR_RegIrqFlags, &CLEARIRQ, 1);
 	loRa->rxSize = readReg(hw, LR_RegRxNbBytes); //Number for received bytes
+	/*
 	if (loRa->rxSize > 0 ) {
 		uint8_t addr = 0x00;
 		HAL_GPIO_WritePin(hw->nssPort, hw->nssPin, GPIO_PIN_RESET); // pull the pin low
@@ -342,6 +350,7 @@ uint8_t readWhenDataArrive(LORA_t *loRa) {
 		HAL_Delay(1);
 		HAL_GPIO_WritePin(hw->nssPort, hw->nssPin, GPIO_PIN_SET); // pull the pin high
 	}
+	*/ //sacado
 	return (0);
 }
 
@@ -355,14 +364,19 @@ uint8_t startTransmition(LORA_t *loRa) {
 	writeReg(hw, LR_RegFifoAddrPtr, &DEFAULT_TX_ADDR, 1);
 	//loRa->txSize = readReg(hw, LR_RegPayloadLength);
 	for (int i = 0; i < loRa->txSize; i++)
-		writeReg(hw, 0x00, loRa->txData + i, 1);
+		writeReg(hw, LR_RegFifo, loRa->txData + i, 1);
 	writeReg(hw, LR_RegOpMode, &LORA_TX_MODE, 1);
+	int writeTimeEnd = HAL_GetTick();
+	loRa->writeTime = writeTimeEnd - timeStart;
+
 
 	uint8_t irqFlags = 0;
 	while (1) {
 		irqFlags = readReg(hw, LR_RegIrqFlags);
 		if (HAL_GPIO_ReadPin(hw->dio0Port, hw->dio0Pin) || (irqFlags & 0x08)) {
 			int timeEnd = HAL_GetTick();
+			uint8_t cmd = 0xFF;//agregado
+			writeReg(hw, LR_RegIrqFlags, &cmd, 1);//agregado
 			loRa->lastTxTime = timeEnd - timeStart;
 			return (loRa->txSize);
 		}

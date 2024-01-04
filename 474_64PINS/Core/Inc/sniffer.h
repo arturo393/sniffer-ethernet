@@ -51,24 +51,27 @@ typedef enum {
 
 typedef struct {
 	GPIO_PinState dOut;
-	GPIO_PinState dIn;
+	GPIO_PinState dIn1;
 	GPIO_PinState dOut2;
 	GPIO_PinState dIn2;
-	GPIO_PinState dOut_switch;
-	GPIO_PinState dIn_switch;
-	uint16_t aIn1;
-	uint16_t aIn2;
+	GPIO_PinState swOut_x_20mA;
+	GPIO_PinState swIn_x_20mA;
+	GPIO_PinState swSerial;//agregado
+	uint16_t aIn1_0_10V;
+	uint16_t aIn2_x_20mA;
 	uint16_t aIn3;
-	uint16_t aOut1;
-	uint16_t aOut2;
+	uint16_t aOut1_0_10V;
+	uint16_t aOut2_x_20mA;
 	uint16_t aOut3;
 	Function_t function;
 	uint8_t id;
 	I2C_HandleTypeDef *i2c;
-	SX1278_t *loRaTx;
-	SX1278_t *loRaRx;
+	//SX1278_t *loRaTx;
+	//SX1278_t *loRaRx;
 	SX1278_t *loRa;
-	UART_t *serial;
+	//UART_t *serial; //sacado
+	UART_t *serial_lora;
+	UART_t *serial_config;
 	LORA_t *lora;
 } Sniffer_t;
 
@@ -78,6 +81,9 @@ void slaveProcessRdss(RDSS_t *rdss, SX1278_t *loRa, Sniffer_t *sniffer);
 void transmitStatus(SX1278_t *loRa, RDSS_t *rdss);
 void processCommand(SX1278_t *loRa, RDSS_t *rdss, Sniffer_t *sniffer);
 uint8_t exec(Sniffer_t *s, uint8_t *dataReceived);
+uint8_t execSerial(Sniffer_t *s, uint8_t *dataReceived); //agregado
+uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer);//agregado
+
 HAL_StatusTypeDef saveData(Sniffer_t *s, EEPROM_SECTOR_t offset);
 HAL_StatusTypeDef readData(Sniffer_t *s, EEPROM_SECTOR_t sector);
 HAL_StatusTypeDef readEepromData(Sniffer_t *s, EEPROM_SECTOR_t sector);

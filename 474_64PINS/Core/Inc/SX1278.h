@@ -26,7 +26,7 @@
 #define UPLINK_FREQ       172000000
 #define SX1278_MAX_PACKET	100
 #define SX1278_DEFAULT_TIMEOUT		3000
-#define LORA_SEND_TIMEOUT 2000 //2000
+#define LORA_SEND_TIMEOUT 10000 //2000
 #define SX1278_POWER_20DBM  0xFF //20dbm
 #define SX1278_POWER_17DBM  0xFC //17dbm
 #define SX1278_POWER_14DBM  0xF9 //14dbm
@@ -340,7 +340,9 @@ typedef struct {
 	OPERATING_MODE_t mode;
 	uint32_t lastTxTime;
 	uint32_t lastRxTim;
-	uint8_t rxData[LORA_RX_BUFFER_SIZE];
+	//uint8_t rxData[LORA_RX_BUFFER_SIZE];
+	uint32_t writeTime;//agregado
+	uint8_t rxData[300];//agregado
 	uint8_t rxSize;
 	uint8_t *txData;
 	uint8_t txSize;
