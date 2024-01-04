@@ -3272,3 +3272,14 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64
 
 !ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-01-04 07:23:47.221
 !MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-01-04 08:29:06.003
+!MESSAGE Indexed 'rdss_master' (34 sources, 132 headers) in 5.97 sec: 12,337 declarations; 60,122 references; 2 unresolved inclusions; 36 syntax errors; 188 unresolved names (0.26%)
+
+!ENTRY org.eclipse.ui.ide 2 4 2024-01-04 08:30:30.556
+!MESSAGE Problems occurred closing the selected resources.
+!SUBENTRY 1 org.eclipse.core.resources 2 234 2024-01-04 08:30:30.556
+!MESSAGE The project description file (.project) for 'rdss_master' was missing.  This file contains important information about the project.  A new project description file has been created, but some information about the project may have been lost.
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-01-04 08:30:53.811
+!MESSAGE Indexed 'rdss_master' (0 sources, 0 headers) in 0 sec: 0 declarations; 0 references; 0 unresolved inclusions; 0 syntax errors; 0 unresolved names (0%)
