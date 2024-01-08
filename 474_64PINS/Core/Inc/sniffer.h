@@ -12,6 +12,7 @@
 #include "SX1278.h"
 #include "rdss.h"
 #include "k24c02.h"
+#include "ethernet.h" ////////###########/////////////
 
 #define SF_OFFSET 0
 #define BW_OFFSET 1
@@ -34,6 +35,7 @@ extern uint8_t adcCounter[ADC_CHANNELS];
 extern uint16_t adcReadings[ADC_CHANNELS][ADC_WINDOW_SIZE];
 extern uint16_t adcMA[ADC_CHANNELS];
 extern uint32_t adcSum[ADC_CHANNELS];
+extern uint8_t data_ethernet;  //////////////########////////////////
 
 typedef enum {
 	SPREAD_FACTOR,
@@ -73,6 +75,7 @@ typedef struct {
 	UART_t *serial_lora;
 	UART_t *serial_config;
 	LORA_t *lora;
+	uint8_t ethernet_buffer_Rx;
 } Sniffer_t;
 
 Sniffer_t* sniffer(I2C_HandleTypeDef *i2c,uint16_t *adcBuffer);
