@@ -14,7 +14,7 @@
 
 extern SPI_HandleTypeDef hspi1;
 extern uint8_t *p;
-extern uint8_t data_ethernet;
+
 // Funciones de transmisión recepción vía SPI:
 void transmitir_spi(uint8_t* p, uint8_t len);
 void transmitir_recibir_spi(uint8_t* p_t, uint8_t len_t, uint8_t* p_r, uint16_t len_r);

@@ -27,7 +27,7 @@ Sniffer_t* sniffer(I2C_HandleTypeDef *i2c, uint16_t *adcBuffer) {
 		s->aOut3 = readEepromData(s, AOUT_4_20mA);
 		s->dOut = readEepromData(s, DOUT);
 		s->aIn1_0_10V = adcBuffer + VOLTAGE0_10V_CH;
-		s->aIn2_x_20mA = adcBuffer + SENSOR0_20mA_CH;
+		s->aIn2_x_20mA = adcBuffer + SENSOR0_20mA_CH; ///////////REVISAR////////////
 		s->aIn2_x_20mA = adcBuffer + SENSOR4_20mACH;
 	}
 	return (s);
@@ -59,7 +59,7 @@ void processReceivedSerialConfig(Sniffer_t *sniffer) {
 	memset(serialConfig->data, 0, UART_SIZE);
 	*/
 
-	*len = execSerial(sniffer, dataReceived);
+	*len = packet_message(sniffer, dataReceived,*len);
 
 	// Send response via LoRa
 	loRa->txData = dataReceived;
@@ -89,7 +89,7 @@ void processReceivedSerialLora(Sniffer_t *sniffer){
 
 	//añadir filtros aca
 
-	*len = execSerial(sniffer, dataReceived);
+	*len = packet_message(sniffer, dataReceived, *len);
 
 	 // Send response via LoRa
 	loRa->txData = dataReceived;
@@ -100,6 +100,38 @@ void processReceivedSerialLora(Sniffer_t *sniffer){
 	memset(serialLora->data, 0, UART_SIZE);
 	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
 }
+
+void processReceivedEthernet(Sniffer_t *sniffer){///////////////////////################////////////////////////////////////
+
+	uint8_t *dataReceived = sniffer-> eth_bufRX;
+	uint8_t *len = &(sniffer -> eth_lenRX);
+	LORA_t *loRa = sniffer->lora;
+	SX1276_HW_t *hw = loRa->rxhw;
+
+	if(*len < 2 ){
+		HAL_Delay(300);
+		if(*len<2){
+			memset(sniffer-> eth_bufRX, 0, *len);
+			//serialLora->isReceivedDataReady = false;
+			return;
+		}
+	}
+
+	//añadir filtros aca
+
+	*len = packet_message(sniffer, dataReceived,*len);
+
+	 // Send response via LoRa
+	loRa->txData = dataReceived;
+	loRa->txSize = *len;
+	startTransmition(loRa);
+	startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
+	memset(loRa->rxData, 0, 300);
+	memset(sniffer-> eth_bufRX, 0, UART_SIZE);
+	sniffer->eth_lenRX = 0;
+	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
+}
+
 
 uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer){
 	// Data validation
@@ -121,7 +153,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 	SX1276_HW_t *hw = loRa->rxhw;
 
 	UART_t *serialLora = sniffer->serial_lora;
-	uint8_t zero = 0x00;
+	uint8_t zero = 0x00;                                          //////////////REVISAR///////////////
 	uint8_t base = readReg(hw, LR_RegFifoRxCurrentaddr);
 
 	int timeStart = HAL_GetTick();
@@ -160,7 +192,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		loRa->txData = dataReceived;
 		loRa->txSize = *len;
 		int timeEnd = HAL_GetTick();
-		int time = timeEnd - timeStart;
+		int time = timeEnd - timeStart; //////////REVISAR//////////
 		startTransmition(loRa);
 		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
 	}
@@ -187,20 +219,24 @@ void processReceived(Sniffer_t *sniffer) {
 		//HAL_UART_DeInit(&huart1);
 		//HAL_UART_Init(&huart1);
 	}
+
+	else if (sniffer -> eth_lenRX >0){
+		processReceivedEthernet(sniffer);
+	}
+
 	else if (loRa->rxSize > 0) {
 		processReceivedLoRa(sniffer);
 	}
 }
 
-uint8_t execSerial(Sniffer_t *s, uint8_t *dataReceived) {
-	uint16_t dataLen = 0;
+uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen) {
 	uint8_t *responsePtr;
 	uint8_t zero [ ] = {0x00};
 	uint8_t sniffer_func [ ] = {0x0A};
 	uint8_t cmd [ ] = {QUERY_UART1} ;
 	uint8_t start_mark [ ] = {0x7e};
 
-	dataLen = s->serial_lora->len;
+
 	uint8_t temp [dataLen];
 	uint8_t i = 0;
 	while (i < dataLen){

@@ -26,6 +26,7 @@
 #include "wizchip_conf.h"
 #include "socket.h"
 #include "w5500_spi.h"
+#include "ethernet.h"
 
 /* USER CODE END Includes */
 
@@ -36,6 +37,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+//#define funciones_main  0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,7 +53,6 @@ DAC_HandleTypeDef hdac1;
 DAC_HandleTypeDef hdac2;
 
 I2C_HandleTypeDef hi2c3;
-
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
@@ -76,7 +77,7 @@ uint8_t DATA[240];
 uint8_t control_phase;
 uint8_t buffer[243];
 uint8_t buffer_t[3];
-uint8_t * p;
+uint8_t *p;
 uint8_t buffer2[3000];
 
 uint8_t sn[4];
@@ -187,6 +188,8 @@ static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN 0 */
 
 Sniffer_t *s;
+/*
+#if (funciones_main == 1)
 void transmitir_spi(uint8_t* p, uint8_t len){
 	HAL_StatusTypeDef res;
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); // pull the pin low
@@ -255,7 +258,8 @@ void socket_register(uint8_t* buff, uint16_t address,uint8_t bsb, uint8_t* data,
 	}
 	transmitir_spi(buff, t);
 }
-
+#endif
+*/
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
 	for (int adcIdx = 0; adcIdx < ADC_CHANNELS; adcIdx++){
@@ -293,7 +297,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	c=1;
 	HAL_UART_Receive_IT(huart,re, 50);
 	*/
-	uint8_t *data = s->serial_lora->data;
+	//uint8_t *data = s->serial_lora->data;     ///////////////REVISAR///////////////////
 		//uint8_t len;
 		//&len =&( s->serial->len);
 		s->serial_lora->len++;
@@ -380,8 +384,8 @@ int main(void)
 	readEepromData(s, DOWNLINK);
 
 	s->lora->bw = LORABW_125KHZ;
-	s->lora->dfreq = 153000000;
-	s->lora->ufreq = 172000000;
+	s->lora->dfreq = 160000000;
+	s->lora->ufreq = 180000000;
 	s->lora->sf = SF_7;
 	s->lora->cr = LORA_CR_4_5;
 	s->id = 8;
@@ -455,9 +459,12 @@ int main(void)
 	while (1) {
 
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc_result, ADC_CHANNELS);
-//	readWhenDataArrive(s->lora);
+	readWhenDataArrive(s->lora);
 
+	s -> eth_bufRX = data_reception;
+	s -> eth_lenRX = len_rx;
 	processReceived(s);
+
 
 	if(read_IR > 0){
 
@@ -484,6 +491,7 @@ int main(void)
 				p += 2;
 				memcpy(p, &control_phase, 1);
 				transmitir_recibir_spi(buffer_t, 3, data_reception, len_rx);
+
 
 				// SIZE OF RECIEVED DATA
 				socket_register(buffer, 0x28, 0x01,&s_RX_WR[0], sizeof(s_RX_WR[0]));
@@ -525,6 +533,7 @@ int main(void)
 		s_recv = 0;
 		s_discon = 0;
 		s_con = 0;
+
 
 	}
 
@@ -568,6 +577,11 @@ int main(void)
 	p = buffer_t;
 	memcpy(p, &offset_address, 2);
 	transmitir_recibir_spi(buffer_t, 3, s_RX_WR, sizeof(s_RX_WR));
+
+	offset_address = 0x03 << 8;
+	p = buffer_t;
+	memcpy(p, &offset_address, 2);
+	transmitir_recibir_spi(buffer_t, 3, &s_SR, sizeof(s_SR));
 /*
 	transmitir_recibir_spi(buffer_t, 3, &s_MR, sizeof(s_MR));
 
@@ -669,6 +683,7 @@ int main(void)
 
 
 	//---------------------- read data buffer socket 0
+	/*
 	offset_address = 0x00 << 8;
 	BSB = 0x03 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
 	RWB = 0x00 << 2; // read
@@ -679,6 +694,27 @@ int main(void)
 	p += 2;
 	memcpy(p, &control_phase, 1);
 	transmitir_recibir_spi(buffer_t, 3, buffer2,2900);
+	*/
+
+	offset_address = 0x00 << 8;
+	BSB = 0x03 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
+	RWB = 0x00 << 2; // read
+	OM = 00; // VDM
+	control_phase = BSB | RWB | OM;
+	p = buffer_t;
+	memcpy(p, &offset_address, 2);
+	p += 2;
+	memcpy(p, &control_phase, 1);
+	transmitir_recibir_spi(buffer_t, 3,buffer2,2900);
+
+
+
+
+
+
+
+
+
 /*
 	offset_address = 0x00 << 8;
 	BSB = 0x02 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER

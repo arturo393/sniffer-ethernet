@@ -27,8 +27,6 @@
  	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET); // pull the pin high
  	if (res != HAL_OK)
  		Error_Handler();
- 	else
- 		data_ethernet == HAL_OK; /////////#####///////
  	HAL_Delay(10);
 
  }
