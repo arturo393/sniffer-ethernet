@@ -396,11 +396,11 @@ int main(void) {
 	readEepromData(s, DOWNLINK);
 
 	s->lora->bw = LORABW_125KHZ;
-	s->lora->dfreq = 160000000;
-	s->lora->ufreq = 180000000;
+	s->lora->dfreq = 150000000;
+	s->lora->ufreq = 170000000;
 	s->lora->sf = SF_7;
 	s->lora->cr = LORA_CR_4_5;
-	s->id = 0xAA;
+	s->id = 8;
 
 	// lora config
 	writeCommon(s->lora->txhw);
@@ -452,7 +452,7 @@ int main(void) {
 		readWhenDataArrive(s->lora);
 
 
-		processReceived(s);
+        processReceived(s); /////////////*$$$$*************$$$$*****/////
 
 		if (read_IR > 0) {
 
@@ -486,6 +486,7 @@ int main(void) {
 
 					s->eth_bufRX = data_reception;
 					s->eth_lenRX = len_rx;
+
 
 					// SIZE OF RECIEVED DATA
 					socket_register(buffer, 0x28, 0x01, &s_RX_WR[0],

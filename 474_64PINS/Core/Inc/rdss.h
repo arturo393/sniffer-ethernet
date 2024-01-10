@@ -47,8 +47,11 @@ typedef enum RS485_CMD {
 	QUERY_MODULE_ID = 0x10,
 	QUERY_STATUS,
 	SET_VLAD_ATTENUATION,
+	QUERY_MASTER_STATUS,
 	QUERY_UART1, //agregado
 	SET_UART1, //agregado
+
+	SEND_ETH_TO_UART, ///////////////$$$$$$$$$$$$$$$$$$///////////////////
 
 
 	QUERY_TX_FREQ = 0x20,

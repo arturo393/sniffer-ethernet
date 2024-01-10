@@ -59,7 +59,7 @@ void processReceivedSerialConfig(Sniffer_t *sniffer) {
 	memset(serialConfig->data, 0, UART_SIZE);
 	*/
 
-	*len = packet_message(sniffer, dataReceived,*len);
+	*len = packet_message(sniffer, dataReceived,*len,QUERY_UART1); /// o set_uart_1 según corresponda
 
 	// Send response via LoRa
 	loRa->txData = dataReceived;
@@ -89,7 +89,7 @@ void processReceivedSerialLora(Sniffer_t *sniffer){
 
 	//añadir filtros aca
 
-	*len = packet_message(sniffer, dataReceived, *len);
+	*len = packet_message(sniffer, dataReceived, *len, QUERY_UART1); //o set_uart_1 según corresponda
 
 	 // Send response via LoRa
 	loRa->txData = dataReceived;
@@ -119,7 +119,7 @@ void processReceivedEthernet(Sniffer_t *sniffer){///////////////////////########
 
 	//añadir filtros aca
 
-	*len = packet_message(sniffer, dataReceived,*len);
+	*len = packet_message(sniffer, dataReceived,*len, SEND_ETH_TO_UART);
 
 	 // Send response via LoRa
 	loRa->txData = dataReceived;
@@ -229,11 +229,11 @@ void processReceived(Sniffer_t *sniffer) {
 	}
 }
 
-uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen) {
+uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs485_cmd_t cmd_rq) {
 	uint8_t *responsePtr;
 	uint8_t zero [ ] = {0x00};
 	uint8_t sniffer_func [ ] = {0x0A};
-	uint8_t cmd [ ] = {QUERY_UART1} ;
+	uint8_t cmd [ ] = {cmd_rq} ; /////////////$$$$$$$$$$$$$$////////////
 	uint8_t start_mark [ ] = {0x7e};
 
 

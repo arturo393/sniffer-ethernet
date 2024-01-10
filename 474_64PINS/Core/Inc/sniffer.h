@@ -76,7 +76,7 @@ typedef struct {
 	UART_t *serial_config;
 	LORA_t *lora;
 	uint8_t *eth_bufRX;
-	uint16_t eth_lenRX;
+	uint8_t eth_lenRX;
 
 } Sniffer_t;
 
@@ -86,7 +86,7 @@ void slaveProcessRdss(RDSS_t *rdss, SX1278_t *loRa, Sniffer_t *sniffer);
 void transmitStatus(SX1278_t *loRa, RDSS_t *rdss);
 void processCommand(SX1278_t *loRa, RDSS_t *rdss, Sniffer_t *sniffer);
 uint8_t exec(Sniffer_t *s, uint8_t *dataReceived);
-uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived , uint16_t dataLen); //agregado
+uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs485_cmd_t cmd_rq); //agregado
 uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer);//agregado
 
 HAL_StatusTypeDef saveData(Sniffer_t *s, EEPROM_SECTOR_t offset);
