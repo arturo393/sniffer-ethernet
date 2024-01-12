@@ -17,6 +17,7 @@ Sniffer_t* sniffer(I2C_HandleTypeDef *i2c, uint16_t *adcBuffer) {
 	Sniffer_t *s;
 	s = malloc(sizeof(Sniffer_t));
 
+
 	if (s != NULL) {
 		s->function = SNIFFER;
 		s->i2c = i2c;
@@ -29,6 +30,7 @@ Sniffer_t* sniffer(I2C_HandleTypeDef *i2c, uint16_t *adcBuffer) {
 		s->aIn1_0_10V = adcBuffer + VOLTAGE0_10V_CH;
 		s->aIn2_x_20mA = adcBuffer + SENSOR0_20mA_CH; ///////////REVISAR////////////
 		s->aIn2_x_20mA = adcBuffer + SENSOR4_20mACH;
+		s->eth_lenRX = 0;
 	}
 	return (s);
 }
@@ -197,7 +199,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
 	}
 	memset(loRa->rxData, 0, 300);
-	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
+	loRa->rxSize = 0;
 }
 
 void processReceived(Sniffer_t *sniffer) {
@@ -232,10 +234,13 @@ void processReceived(Sniffer_t *sniffer) {
 uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs485_cmd_t cmd_rq) {
 	uint8_t *responsePtr;
 	uint8_t zero [ ] = {0x00};
-	uint8_t sniffer_func [ ] = {0x0A};
+	uint8_t sniffer_func [ ] = {SNIFFER};
 	uint8_t cmd [ ] = {cmd_rq} ; /////////////$$$$$$$$$$$$$$////////////
 	uint8_t start_mark [ ] = {0x7e};
 
+
+	if (dataReceived == NULL)
+		return 0;
 
 	uint8_t temp [dataLen];
 	uint8_t i = 0;

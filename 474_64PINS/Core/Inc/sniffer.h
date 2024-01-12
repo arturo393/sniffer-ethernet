@@ -77,7 +77,6 @@ typedef struct {
 	LORA_t *lora;
 	uint8_t *eth_bufRX;
 	uint8_t eth_lenRX;
-
 } Sniffer_t;
 
 Sniffer_t* sniffer(I2C_HandleTypeDef *i2c,uint16_t *adcBuffer);

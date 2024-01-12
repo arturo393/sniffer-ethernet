@@ -184,78 +184,7 @@ static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN 0 */
 
 Sniffer_t *s;
-/*
- #if (funciones_main == 1)
- void transmitir_spi(uint8_t* p, uint8_t len){
- HAL_StatusTypeDef res;
- HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); // pull the pin low
- res = HAL_SPI_Transmit(&hspi1, p, len, 1000);
- HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET); // pull the pin high
- if (res != HAL_OK)
- Error_Handler();
- HAL_Delay(10);
- }
- void transmitir_recibir_spi(uint8_t* p_t, uint8_t len_t, uint8_t* p_r, uint16_t len_r){
- HAL_StatusTypeDef res;
- HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); // pull the pin low
- res = HAL_SPI_Transmit(&hspi1, p_t, len_t, 1000);
- HAL_SPI_Receive(&hspi1, p_r, len_r, 1000);
- HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET); // pull the pin high
- if (res != HAL_OK)
- Error_Handler();
- HAL_Delay(10);
 
- }
-
- void common_register_block(uint8_t* buff, uint16_t address, uint8_t* data,uint8_t len){
- uint16_t os_address;
- uint8_t bsb;
- uint8_t rwb;
- uint8_t om;
- uint8_t c_phase;
- bsb = 0x00;
- rwb = 0x01 << 2; // write
- om = 00; // VDM
- c_phase = bsb | rwb | om;
- os_address = address;
- os_address = os_address << 8;
- p = buff;
- memcpy(p, &os_address, 2);
- p += 2;
- memcpy(p, &c_phase, 1);
- p +=1;
- for(int i=0;i<len;i++){
- memcpy(p,&data[i],1);
- p +=1;
- }
- transmitir_spi(buff, (3+len));
- }
-
- void socket_register(uint8_t* buff, uint16_t address,uint8_t bsb, uint8_t* data,uint8_t len){
- uint16_t os_address;
- uint8_t rwb;
- uint8_t om;
- uint8_t c_phase;
- uint8_t t = 3 + len;
- bsb = bsb << 3;
- rwb = 0x01 << 2; // write
- om = 00; // VDM
- c_phase = bsb | rwb | om;
- //os_address_1 = address << 8;
- os_address = (address << 8) + ((address>>8) & 0x00FF);
- p = buff;
- memcpy(p, &os_address, 2);
- p += 2;
- memcpy(p, &c_phase, 1);
- p +=1;
- for(int i=0;i<len;i++){
- memcpy(p,&data[i],1);
- p +=1;
- }
- transmitir_spi(buff, t);
- }
- #endif
- */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	for (int adcIdx = 0; adcIdx < ADC_CHANNELS; adcIdx++) {
 
@@ -309,38 +238,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	s->serial_lora->isReceivedDataReady = true;
 
 }
-
-void common_reg_config(uint8_t buffer[243], uint8_t mode, uint8_t gar[],
-		uint8_t sub_r[], uint8_t shar[], uint8_t sipr[]) {
-	//---------------------- configuracion common register
-	common_register_block(buffer, 0x00, (uint8_t*) &mode, sizeof(mode));
-	common_register_block(buffer, 0x01, gar, sizeof(gar));
-	common_register_block(buffer, 0x05, sub_r, sizeof(sub_r));
-	common_register_block(buffer, 0x09, shar, sizeof(shar));
-	common_register_block(buffer, 0x0F, sipr, sizeof(sipr));
-}
-
-void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
-		uint8_t S_DHAR[6], uint8_t S_DPORT[2], uint8_t S_MMS[2], uint8_t S_TTL,
-		uint8_t S_RXBUF_SIZE, uint8_t S_TXBUF_SIZE, uint8_t S_CR_open,
-		uint8_t S_CR_listen) {
-	//---------------------- configuracion socket register
-	socket_register(buffer, 0x00, 0x01, (uint8_t*) &S_MR, sizeof(S_MR));
-	socket_register(buffer, 0x04, 0x01, (uint8_t*) S_PORT, sizeof(S_PORT));
-	socket_register(buffer, 0x06, 0x01, (uint8_t*) &S_DHAR, sizeof(S_DHAR));
-	socket_register(buffer, 0x10, 0x01, (uint8_t*) S_DPORT, sizeof(S_DPORT));
-	socket_register(buffer, 0x12, 0x01, (uint8_t*) &S_MMS, sizeof(S_MMS));
-	socket_register(buffer, 0x16, 0x01, (uint8_t*) &S_TTL, sizeof(S_TTL));
-	socket_register(buffer, 0x1E, 0x01, (uint8_t*) &S_RXBUF_SIZE,
-			sizeof(S_RXBUF_SIZE));
-	socket_register(buffer, 0x1F, 0x01, (uint8_t*) &S_TXBUF_SIZE,
-			sizeof(S_TXBUF_SIZE));
-	socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_open,
-			sizeof(S_CR_open));
-	socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_listen,
-			sizeof(S_CR_listen));
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -349,7 +246,6 @@ void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
-
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -431,10 +327,10 @@ int main(void) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1); // CS HIGH DISABLE
 
 	//-----------------------------------------------------------
-	socket_register(buffer, 0x2E, 0x00, (uint8_t*) &_PHYCFGR_RST,
+	socket_write_register(buffer, 0x2E, 0x00, (uint8_t*) &_PHYCFGR_RST,
 			sizeof(_PHYCFGR_RST));
 	HAL_Delay(500);
-	socket_register(buffer, 0x2E, 0x00, (uint8_t*) &_PHYCFGR_NRST,
+	socket_write_register(buffer, 0x2E, 0x00, (uint8_t*) &_PHYCFGR_NRST,
 			sizeof(_PHYCFGR_NRST));
 	HAL_Delay(200);
 	common_reg_config(buffer, mode, gar, sub_r, shar, sipr);
@@ -454,70 +350,58 @@ int main(void) {
 
         processReceived(s); /////////////*$$$$*************$$$$*****/////
 
+
+
+
 		if (read_IR > 0) {
 
 			if (s_con > 0) { // SOCK_ESTABLISHED
-				socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_con,
-						sizeof(S_CR_con));
+				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_con,sizeof(S_CR_con));
 			}
 
 			if (s_discon > 0) { //FIN/ACK
-				socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_discon,
-						sizeof(S_CR_discon));
-				socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_open,
-						sizeof(S_CR_open));
-				socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_listen,
-						sizeof(S_CR_listen));
+				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_discon,sizeof(S_CR_discon));
+				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_open,sizeof(S_CR_open));
+				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_listen,sizeof(S_CR_listen));
 			}
 
 			if (s_recv > 0) {
 				if (s_send_ok == 0) {
+
+					/* readDataFromEthernet */
 					len_rx = (s_RX_RS[0] << 8) + s_RX_RS[1];
 					offset_address = (s_RX_RD[1] << 8) + s_RX_RD[0];
-					BSB = 0x03 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
-					RWB = 0x00 << 2; // read
-					OM = 00; // VDM
-					control_phase = BSB | RWB | OM;
-					p = buffer_t;
-					memcpy(p, &offset_address, 2);
-					p += 2;
-					memcpy(p, &control_phase, 1);
-					transmitir_recibir_spi(buffer_t, 3, data_reception, len_rx);
+ 					socket_read_register(socket_0_rx_buffer,offset_address,data_reception,len_rx);
 
 					s->eth_bufRX = data_reception;
 					s->eth_lenRX = len_rx;
 
 
 					// SIZE OF RECIEVED DATA
-					socket_register(buffer, 0x28, 0x01, &s_RX_WR[0],
-							sizeof(s_RX_WR[0]));
-					socket_register(buffer, 0x29, 0x01, &s_RX_WR[1],
-							sizeof(s_RX_WR[1]));
-					socket_register(buffer, 0x01, 0x01, (uint8_t*) &S_CR_recv,
-							sizeof(S_CR_recv));
+					socket_write_register(buffer, 0x28, socket_0_register, &s_RX_WR[0],sizeof(s_RX_WR[0]));
+					socket_write_register(buffer, 0x29, socket_0_register, &s_RX_WR[1],sizeof(s_RX_WR[1]));
+					socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_recv,sizeof(S_CR_recv));
 					//-------------------------
+
+					/* sendDataToEthernet1 */
+                    char enviar[] ="holamundo";
 					point = (s_TX_RD[0] << 8) + s_TX_RD[1];
-					socket_register(buffer, point, 0x02, data_reception,
-							len_rx);
-					point = point + len_rx;
+					socket_write_register(buffer, point, socket_0_tx_buffer, enviar,sizeof(enviar));
+					//socket_write_register(buffer, point, socket_0_tx_buffer, data_reception,len_rx);
+					point = point + sizeof(enviar);
+					//point = point + len_rx;
 					q = (point >> 8);
 					q = q & 0x00FF;
-					socket_register(buffer, 0x24, 0x01, (uint8_t*) &q, 1);
+					socket_write_register(buffer, 0x24, socket_0_register, (uint8_t*) &q, 1);
 					q = point & 0x00FF;
-					socket_register(buffer, 0x25, 0x01, (uint8_t*) &q, 1);
-					socket_register(buffer, 0x01, 0x01,
-							(uint8_t*) &send_socket0, sizeof(send_socket0));
+					socket_write_register(buffer, 0x25, socket_0_register, (uint8_t*) &q, 1);
 
+					socket_write_register(buffer, 0x01, socket_0_register,(uint8_t*) &send_socket0, sizeof(send_socket0));///enviar
+
+					//----
 					offset_address = (s_TX_RD[1] << 8) + (s_TX_RD[0] & 0x00FF);
-					BSB = 0x02 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
-					RWB = 0x00 << 2; // read
-					OM = 00; // VDM
-					control_phase = BSB | RWB | OM;
-					p = buffer_t;
-					memcpy(p, &offset_address, 2);
-					p += 2;
-					memcpy(p, &control_phase, 1);
-					transmitir_recibir_spi(buffer_t, 3, buffer3, 3000);
+
+					socket_read_register(socket_0_tx_buffer,offset_address,buffer3,3000);
 
 
 				}
@@ -538,7 +422,10 @@ int main(void) {
 
 		}
 
+
+
 		//----------------------- lectura registros
+
 		offset_address = 0x00 << 8;
 		BSB = 0x01 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
 		RWB = 0x00 << 2; // read
@@ -554,10 +441,14 @@ int main(void) {
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, &s_IR, sizeof(s_IR));
 
+
 		offset_address = 0x22 << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, s_TX_RD, sizeof(s_TX_RD));
+		 uint8_t *buff_reg =  s_TX_RD;
+		 uint8_t len_sIR = sizeof(s_TX_RD);
+		 socket_read_register(socket_0_register,s_TX_RD_REG,buff_reg,len_sIR);////////////////////////////////////####################
 
 		offset_address = 0x24 << 8;
 		p = buffer_t;
@@ -671,7 +562,7 @@ int main(void) {
 		read_IR = s_send_ok + s_timeout + s_recv + s_discon + s_con;
 
 		if (read_IR > 0) {
-			socket_register(buffer, 0x02, 0x01, (uint8_t*) &ir_reset,
+			socket_write_register(buffer, 0x02, 0x01, (uint8_t*) &ir_reset,
 					sizeof(ir_reset));
 			offset_address = 0x02 << 8;
 			p = buffer_t;
