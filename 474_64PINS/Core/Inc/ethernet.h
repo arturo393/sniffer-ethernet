@@ -15,16 +15,16 @@
 extern SPI_HandleTypeDef hspi1;
 extern uint8_t *p;
 
+#define TX_offset 0x01
 //Selección de socket registers//
-
+#define s_CR_offset 0x01
 #define s_IR_REG 0x02
-#define s_TX_RD_REG 0x22
-#define s_TX_WR_REG 0x24
+#define s_TX_RD_ 0x22
+#define sn_TX_WR 0x24
 #define s_RX_RS_REG 0x26
 #define s_RX_RD_REG 0x28
 #define s_RX_WR_REG 0x2A
 #define s_SR_REG 0x03
-#define s_CR_REG 0x01
 #define s_PORT_REG 0x04
 #define s_DHAR_REG 0x06
 #define s_DIPR_REG 0x0C
@@ -49,6 +49,7 @@ extern uint8_t *p;
 #define socket_6_register 0x19
 #define socket_7_register 0x1D
 
+
 //PARA SELECCIÓN DE BUFFER DE TX DE SOCKET//
 #define socket_0_tx_buffer 0x02
 #define socket_1_tx_buffer 0x06
@@ -69,11 +70,21 @@ extern uint8_t *p;
 #define socket_6_rx_buffer 0x1B
 #define socket_7_rx_buffer 0x1F
 
+//PARA ENVÍO EN SOCKET RESPECTIVO//
+#define OPEN 0x01
+#define LISTEN 0x02
+#define CONNECT 0x04
+#define DISCON 0x08
+#define CLOSE 0x10
+#define SEND 0x20
+#define SEND_MAC 0x21
+#define SEND_KEEP 0x22
+#define RECV 0x40
 
 // Funciones de transmisión recepción vía SPI:
 void transmitir_spi(uint8_t* p, uint8_t len);
 void transmitir_recibir_spi(uint8_t* p_t, uint8_t len_t, uint8_t* p_r, uint16_t len_r);
-void socket_read_register(uint8_t BSB_SELECT,uint8_t addr, uint8_t *buffer_r, uint16_t buffer_r_len);
+void eth_read_reg(uint8_t BSB_SELECT,uint8_t addr, uint8_t *buffer_r, uint16_t buffer_r_len);
 
 // Funciones para el ajuste de los registros del chip w5500:
 void common_register_block(uint8_t* buff, uint16_t address, uint8_t* data,uint8_t len);
@@ -84,6 +95,7 @@ void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
 		uint8_t S_DHAR[6], uint8_t S_DPORT[2], uint8_t S_MMS[2], uint8_t S_TTL,
 		uint8_t S_RXBUF_SIZE, uint8_t S_TXBUF_SIZE, uint8_t S_CR_open,
 		uint8_t S_CR_listen);
-
+//Transmitir por ethernet
+void eth_transmit(uint8_t socket_n_register, uint8_t *data_transmitir, uint16_t data_len);
 
 #endif /* INC_ETHERNET_H_ */

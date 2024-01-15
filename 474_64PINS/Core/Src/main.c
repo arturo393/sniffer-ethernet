@@ -27,6 +27,7 @@
 #include "socket.h"
 #include "w5500_spi.h"
 #include "ethernet.h"
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -371,7 +372,7 @@ int main(void) {
 					/* readDataFromEthernet */
 					len_rx = (s_RX_RS[0] << 8) + s_RX_RS[1];
 					offset_address = (s_RX_RD[1] << 8) + s_RX_RD[0];
- 					socket_read_register(socket_0_rx_buffer,offset_address,data_reception,len_rx);
+ 					eth_read_reg(socket_0_rx_buffer,offset_address,data_reception,len_rx);
 
 					s->eth_bufRX = data_reception;
 					s->eth_lenRX = len_rx;
@@ -384,8 +385,16 @@ int main(void) {
 					//-------------------------
 
 					/* sendDataToEthernet1 */
-                    char enviar[] ="holamundo";
-					point = (s_TX_RD[0] << 8) + s_TX_RD[1];
+                    char enviar[] ="Hola";
+                    int size =strlen(enviar)+1;
+                    uint8_t data_enviar[size];
+                    for (int i = 0;i<size;i++){
+                    	data_enviar[i] = (uint8_t) enviar[i];
+                    }
+					//point = (s_TX_RD[0] << 8) + s_TX_RD[1];
+			        eth_transmit(socket_0_register, data_enviar, size);
+
+                    /*
 					socket_write_register(buffer, point, socket_0_tx_buffer, enviar,sizeof(enviar));
 					//socket_write_register(buffer, point, socket_0_tx_buffer, data_reception,len_rx);
 					point = point + sizeof(enviar);
@@ -397,11 +406,11 @@ int main(void) {
 					socket_write_register(buffer, 0x25, socket_0_register, (uint8_t*) &q, 1);
 
 					socket_write_register(buffer, 0x01, socket_0_register,(uint8_t*) &send_socket0, sizeof(send_socket0));///enviar
-
+                    */
 					//----
 					offset_address = (s_TX_RD[1] << 8) + (s_TX_RD[0] & 0x00FF);
 
-					socket_read_register(socket_0_tx_buffer,offset_address,buffer3,3000);
+					eth_read_reg(socket_0_tx_buffer,offset_address,buffer3,3000);
 
 
 				}
@@ -441,14 +450,17 @@ int main(void) {
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, &s_IR, sizeof(s_IR));
 
-
+       /*
 		offset_address = 0x22 << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, s_TX_RD, sizeof(s_TX_RD));
-		 uint8_t *buff_reg =  s_TX_RD;
-		 uint8_t len_sIR = sizeof(s_TX_RD);
-		 socket_read_register(socket_0_register,s_TX_RD_REG,buff_reg,len_sIR);////////////////////////////////////####################
+		*/
+
+
+		 //uint8_t *buff_reg =  s_TX_RD;
+		 //uint8_t len_sIR = sizeof(s_TX_RD);
+		 //socket_read_register(socket_0_register,s_TX_RD_REG,buff_reg,len_sIR);////////////////////////////////////####################
 
 		offset_address = 0x24 << 8;
 		p = buffer_t;
