@@ -181,13 +181,36 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		return;
 	}
 	//uint8_t auxLen = *len;
-	*len = exec(sniffer, dataReceived);
+	*len = message_package(sniffer, dataReceived);
 
 
 	if(dataReceived[CMD_INDEX] == QUERY_UART1){
 		//Retransmit  via serial
 		HAL_UART_Transmit(serialLora->handler, dataReceived+DATA_START_INDEX, *len, 100);
 		memset(serialLora->data, 0, UART_SIZE);
+	}
+	if(dataReceived[CMD_INDEX] == 0x14){
+
+		 uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
+		 uint8_t data_enviar[size];
+		 for (uint8_t i = 0; i < size; i++){
+		   data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
+		 }
+		 eth_transmit(socket_0_register, data_enviar, size);
+		 /*
+         char enviar[] ="Hola";
+         int size =strlen(enviar)+1;
+         uint8_t data_enviar[size];
+         for (int i = 0;i<size;i++){
+         	data_enviar[i] = (uint8_t) enviar[i];
+         }
+
+	     eth_transmit(socket_0_register, data_enviar, size);
+	     */
+		 //eth_transmit(socket_0_register, data_enviar, size);
+
+
+
 	}
 	else{
 		// Send response via LoRa
@@ -283,7 +306,7 @@ uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs
 	return (END_INDEX + 1);
 }
 
-uint8_t exec(Sniffer_t *s, uint8_t *dataReceived) {
+uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 
 	uint16_t dataLen = 0;
 	LORA_t *loRa = s->lora;

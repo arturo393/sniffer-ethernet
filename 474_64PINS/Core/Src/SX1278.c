@@ -329,14 +329,15 @@ void startRxContinuous(SX1276_HW_t *hw, uint8_t payloadLength) {
 }
 uint8_t flags = 0x40;
 uint8_t regflags = 0;
+
 uint8_t readWhenDataArrive(LORA_t *loRa) {
 	SX1276_HW_t *hw = loRa->rxhw;
 //	if (HAL_GPIO_ReadPin(hw->dio0Port, hw->dio0Pin) == GPIO_PIN_RESET)
 //		return (1);
-	regflags = readReg(hw,LR_RegIrqFlags );
-	if((regflags & flags) != 0x40)
-		return(1);
-//flags = readReg(hw,LR_RegIrqFlags );
+   regflags = readReg(hw,LR_RegIrqFlags );
+   if((regflags & flags) != 0x40)
+     	return(1);
+    flags = readReg(hw,LR_RegIrqFlags );
 	writeReg(hw, LR_RegIrqFlags, &CLEARIRQ, 1);
 	loRa->rxSize = readReg(hw, LR_RegRxNbBytes); //Number for received bytes
 	/*

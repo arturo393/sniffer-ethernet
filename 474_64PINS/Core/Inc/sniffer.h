@@ -84,7 +84,7 @@ void processReceived(Sniffer_t *sniffer);
 void slaveProcessRdss(RDSS_t *rdss, SX1278_t *loRa, Sniffer_t *sniffer);
 void transmitStatus(SX1278_t *loRa, RDSS_t *rdss);
 void processCommand(SX1278_t *loRa, RDSS_t *rdss, Sniffer_t *sniffer);
-uint8_t exec(Sniffer_t *s, uint8_t *dataReceived);
+uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived);
 uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs485_cmd_t cmd_rq); //agregado
 uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer);//agregado
 

@@ -346,6 +346,7 @@ int main(void) {
 	while (1) {
 
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_result, ADC_CHANNELS);
+
 		readWhenDataArrive(s->lora);
 
 
@@ -385,29 +386,17 @@ int main(void) {
 					//-------------------------
 
 					/* sendDataToEthernet1 */
+                     /*
                     char enviar[] ="Hola";
                     int size =strlen(enviar)+1;
                     uint8_t data_enviar[size];
                     for (int i = 0;i<size;i++){
                     	data_enviar[i] = (uint8_t) enviar[i];
                     }
-					//point = (s_TX_RD[0] << 8) + s_TX_RD[1];
-			        eth_transmit(socket_0_register, data_enviar, size);
+                      */
+			        //eth_transmit(socket_0_register, data_enviar, size);
 
-                    /*
-					socket_write_register(buffer, point, socket_0_tx_buffer, enviar,sizeof(enviar));
-					//socket_write_register(buffer, point, socket_0_tx_buffer, data_reception,len_rx);
-					point = point + sizeof(enviar);
-					//point = point + len_rx;
-					q = (point >> 8);
-					q = q & 0x00FF;
-					socket_write_register(buffer, 0x24, socket_0_register, (uint8_t*) &q, 1);
-					q = point & 0x00FF;
-					socket_write_register(buffer, 0x25, socket_0_register, (uint8_t*) &q, 1);
 
-					socket_write_register(buffer, 0x01, socket_0_register,(uint8_t*) &send_socket0, sizeof(send_socket0));///enviar
-                    */
-					//----
 					offset_address = (s_TX_RD[1] << 8) + (s_TX_RD[0] & 0x00FF);
 
 					eth_read_reg(socket_0_tx_buffer,offset_address,buffer3,3000);

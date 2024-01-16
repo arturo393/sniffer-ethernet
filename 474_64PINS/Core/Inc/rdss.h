@@ -52,6 +52,7 @@ typedef enum RS485_CMD {
 	SET_UART1, //agregado
 
 	SEND_ETH_TO_UART, ///////////////$$$$$$$$$$$$$$$$$$///////////////////
+	QUERY_ETH,
 
 
 	QUERY_TX_FREQ = 0x20,
