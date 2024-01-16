@@ -1,0 +1,4 @@
+../Core/Src/led.c:21:6:led_off	1
+../Core/Src/led.c:25:6:blinkKALed	3
+../Core/Src/led.c:33:6:led_reset	1
+../Core/Src/led.c:9:6:ledInit	1
