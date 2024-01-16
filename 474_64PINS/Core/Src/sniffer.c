@@ -189,7 +189,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		HAL_UART_Transmit(serialLora->handler, dataReceived+DATA_START_INDEX, *len, 100);
 		memset(serialLora->data, 0, UART_SIZE);
 	}
-	if(dataReceived[CMD_INDEX] == 0x14){
+	if(dataReceived[CMD_INDEX] == QUERY_ETH){
 
 		 uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
 		 uint8_t data_enviar[size];

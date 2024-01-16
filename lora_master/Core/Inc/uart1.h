@@ -22,9 +22,9 @@ typedef struct UART1 {
 	uint8_t *txData;
 	uint8_t txSize;
 	uint8_t rxSize;
-	uint32_t operationTimeout;
 	bool isReceivedDataReady;
 	bool isDebugModeEnabled;
+	uint32_t operationTimeout;
 } UART1_t;
 
 uint8_t  cleanByTimeout(UART1_t* uart1,const char* str);

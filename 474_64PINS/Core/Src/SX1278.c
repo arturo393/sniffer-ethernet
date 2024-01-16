@@ -420,7 +420,7 @@ LORA_t* loRa_Init(SPI_HandleTypeDef *spi1,SPI_HandleTypeDef *spi2) {
 
 void initLoRaParameters(SX1278_t *module) {
 	module->power = SX1278_POWER_17DBM;
-	module->LoRa_CRC_sum = CRC_ENABLE;
+	module->LoRa_CRC_sum = CRC_DISABLE;
 	module->ocp = OVERCURRENTPROTECT;
 	module->lnaGain = LNAGAIN;
 	module->AgcAutoOn = 12; // for L-TEL PROTOCOL

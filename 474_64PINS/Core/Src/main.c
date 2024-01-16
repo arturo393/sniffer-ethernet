@@ -295,7 +295,7 @@ int main(void) {
 	s->lora->bw = LORABW_125KHZ;
 	s->lora->dfreq = 150000000;
 	s->lora->ufreq = 170000000;
-	s->lora->sf = SF_7;
+	s->lora->sf = SF_10;
 	s->lora->cr = LORA_CR_4_5;
 	s->id = 8;
 
@@ -384,19 +384,6 @@ int main(void) {
 					socket_write_register(buffer, 0x29, socket_0_register, &s_RX_WR[1],sizeof(s_RX_WR[1]));
 					socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_recv,sizeof(S_CR_recv));
 					//-------------------------
-
-					/* sendDataToEthernet1 */
-                     /*
-                    char enviar[] ="Hola";
-                    int size =strlen(enviar)+1;
-                    uint8_t data_enviar[size];
-                    for (int i = 0;i<size;i++){
-                    	data_enviar[i] = (uint8_t) enviar[i];
-                    }
-                      */
-			        //eth_transmit(socket_0_register, data_enviar, size);
-
-
 					offset_address = (s_TX_RD[1] << 8) + (s_TX_RD[0] & 0x00FF);
 
 					eth_read_reg(socket_0_tx_buffer,offset_address,buffer3,3000);

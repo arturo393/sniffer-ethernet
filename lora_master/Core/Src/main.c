@@ -585,10 +585,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		cleanRx(uart1_ptr);
 		uart1_ptr->rxSize = 0;
 	}
-	HAL_UART_Receive_IT(&huart1, &rxData, 1);
+
 	uart1_ptr->rxData[uart1_ptr->rxSize++] = rxData;
+
 	if (rxData == RDSS_END_MARK)
 		uart1_ptr->isReceivedDataReady = true;
+
+	HAL_UART_Receive_IT(&huart1, &rxData, 1);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {

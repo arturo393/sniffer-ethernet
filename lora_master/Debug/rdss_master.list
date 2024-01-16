@@ -21,31 +21,31 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         0000005c  20000000  08007538  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00000468  2000005c  08007594  0002005c  2**2
+  9 .bss          00000464  2000005c  08007594  0002005c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000604  200004c4  08007594  000204c4  2**0
+ 10 ._user_heap_stack 00000600  200004c0  08007594  000204c0  2**0
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0002005c  2**0
                   CONTENTS, READONLY
  12 .comment      00000043  00000000  00000000  00020085  2**0
                   CONTENTS, READONLY
- 13 .debug_info   00011fb3  00000000  00000000  000200c8  2**0
+ 13 .debug_info   00011fbf  00000000  00000000  000200c8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_abbrev 00002e9b  00000000  00000000  0003207b  2**0
+ 14 .debug_abbrev 00002e9b  00000000  00000000  00032087  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_aranges 00000f98  00000000  00000000  00034f18  2**3
+ 15 .debug_aranges 00000f98  00000000  00000000  00034f28  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_rnglists 00000c19  00000000  00000000  00035eb0  2**0
+ 16 .debug_rnglists 00000c19  00000000  00000000  00035ec0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_macro  00019eb1  00000000  00000000  00036ac9  2**0
+ 17 .debug_macro  00019eb1  00000000  00000000  00036ad9  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   00015031  00000000  00000000  0005097a  2**0
+ 18 .debug_line   00015031  00000000  00000000  0005098a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    0008ee84  00000000  00000000  000659ab  2**0
+ 19 .debug_str    0008ee8e  00000000  00000000  000659bb  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  00004410  00000000  00000000  000f4830  2**2
+ 20 .debug_frame  00004410  00000000  00000000  000f484c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 0000005c  00000000  00000000  000f8c40  2**0
+ 21 .debug_line_str 0000005c  00000000  00000000  000f8c5c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2689,13 +2689,13 @@ int main(void) {
  8001620:	20000204 	.word	0x20000204
  8001624:	20000228 	.word	0x20000228
  8001628:	40010c00 	.word	0x40010c00
- 800162c:	20000364 	.word	0x20000364
- 8001630:	2000036c 	.word	0x2000036c
+ 800162c:	20000360 	.word	0x20000360
+ 8001630:	20000368 	.word	0x20000368
  8001634:	20000208 	.word	0x20000208
  8001638:	20000224 	.word	0x20000224
  800163c:	200000d4 	.word	0x200000d4
- 8001640:	20000368 	.word	0x20000368
- 8001644:	20000370 	.word	0x20000370
+ 8001640:	20000364 	.word	0x20000364
+ 8001644:	2000036c 	.word	0x2000036c
  8001648:	2000012c 	.word	0x2000012c
  800164c:	20000078 	.word	0x20000078
 
@@ -3277,47 +3277,49 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  8001966:	b082      	sub	sp, #8
  8001968:	af00      	add	r7, sp, #0
  800196a:	6078      	str	r0, [r7, #4]
-	/* Read received data from UART1 */
 	if (uart1_ptr->rxSize >= UART2_RX_BUFFLEN) {
 		cleanRx(uart1_ptr);
 		uart1_ptr->rxSize = 0;
 	}
-	HAL_UART_Receive_IT(&huart1, &rxData, 1);
- 800196c:	2201      	movs	r2, #1
- 800196e:	490f      	ldr	r1, [pc, #60]	; (80019ac <HAL_UART_RxCpltCallback+0x48>)
- 8001970:	480f      	ldr	r0, [pc, #60]	; (80019b0 <HAL_UART_RxCpltCallback+0x4c>)
- 8001972:	f004 ff37 	bl	80067e4 <HAL_UART_Receive_IT>
+
 	uart1_ptr->rxData[uart1_ptr->rxSize++] = rxData;
- 8001976:	4b0f      	ldr	r3, [pc, #60]	; (80019b4 <HAL_UART_RxCpltCallback+0x50>)
- 8001978:	6819      	ldr	r1, [r3, #0]
- 800197a:	4b0e      	ldr	r3, [pc, #56]	; (80019b4 <HAL_UART_RxCpltCallback+0x50>)
- 800197c:	681b      	ldr	r3, [r3, #0]
- 800197e:	f893 2131 	ldrb.w	r2, [r3, #305]	; 0x131
- 8001982:	1c50      	adds	r0, r2, #1
- 8001984:	b2c0      	uxtb	r0, r0
- 8001986:	f883 0131 	strb.w	r0, [r3, #305]	; 0x131
- 800198a:	4b08      	ldr	r3, [pc, #32]	; (80019ac <HAL_UART_RxCpltCallback+0x48>)
- 800198c:	781b      	ldrb	r3, [r3, #0]
- 800198e:	548b      	strb	r3, [r1, r2]
+ 800196c:	4b0f      	ldr	r3, [pc, #60]	; (80019ac <HAL_UART_RxCpltCallback+0x48>)
+ 800196e:	6819      	ldr	r1, [r3, #0]
+ 8001970:	4b0e      	ldr	r3, [pc, #56]	; (80019ac <HAL_UART_RxCpltCallback+0x48>)
+ 8001972:	681b      	ldr	r3, [r3, #0]
+ 8001974:	f893 2131 	ldrb.w	r2, [r3, #305]	; 0x131
+ 8001978:	1c50      	adds	r0, r2, #1
+ 800197a:	b2c0      	uxtb	r0, r0
+ 800197c:	f883 0131 	strb.w	r0, [r3, #305]	; 0x131
+ 8001980:	4b0b      	ldr	r3, [pc, #44]	; (80019b0 <HAL_UART_RxCpltCallback+0x4c>)
+ 8001982:	781b      	ldrb	r3, [r3, #0]
+ 8001984:	548b      	strb	r3, [r1, r2]
+
 	if (rxData == RDSS_END_MARK)
- 8001990:	4b06      	ldr	r3, [pc, #24]	; (80019ac <HAL_UART_RxCpltCallback+0x48>)
- 8001992:	781b      	ldrb	r3, [r3, #0]
- 8001994:	2b7f      	cmp	r3, #127	; 0x7f
- 8001996:	d104      	bne.n	80019a2 <HAL_UART_RxCpltCallback+0x3e>
+ 8001986:	4b0a      	ldr	r3, [pc, #40]	; (80019b0 <HAL_UART_RxCpltCallback+0x4c>)
+ 8001988:	781b      	ldrb	r3, [r3, #0]
+ 800198a:	2b7f      	cmp	r3, #127	; 0x7f
+ 800198c:	d104      	bne.n	8001998 <HAL_UART_RxCpltCallback+0x34>
 		uart1_ptr->isReceivedDataReady = true;
- 8001998:	4b06      	ldr	r3, [pc, #24]	; (80019b4 <HAL_UART_RxCpltCallback+0x50>)
- 800199a:	681b      	ldr	r3, [r3, #0]
- 800199c:	2201      	movs	r2, #1
- 800199e:	f883 2138 	strb.w	r2, [r3, #312]	; 0x138
+ 800198e:	4b07      	ldr	r3, [pc, #28]	; (80019ac <HAL_UART_RxCpltCallback+0x48>)
+ 8001990:	681b      	ldr	r3, [r3, #0]
+ 8001992:	2201      	movs	r2, #1
+ 8001994:	f883 2132 	strb.w	r2, [r3, #306]	; 0x132
+
+	HAL_UART_Receive_IT(&huart1, &rxData, 1);
+ 8001998:	2201      	movs	r2, #1
+ 800199a:	4905      	ldr	r1, [pc, #20]	; (80019b0 <HAL_UART_RxCpltCallback+0x4c>)
+ 800199c:	4805      	ldr	r0, [pc, #20]	; (80019b4 <HAL_UART_RxCpltCallback+0x50>)
+ 800199e:	f004 ff21 	bl	80067e4 <HAL_UART_Receive_IT>
 }
  80019a2:	bf00      	nop
  80019a4:	3708      	adds	r7, #8
  80019a6:	46bd      	mov	sp, r7
  80019a8:	bd80      	pop	{r7, pc}
  80019aa:	bf00      	nop
- 80019ac:	20000370 	.word	0x20000370
- 80019b0:	2000012c 	.word	0x2000012c
- 80019b4:	20000204 	.word	0x20000204
+ 80019ac:	20000204 	.word	0x20000204
+ 80019b0:	2000036c 	.word	0x2000036c
+ 80019b4:	2000012c 	.word	0x2000012c
 
 080019b8 <executeServerCmd>:
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
@@ -3971,7 +3973,7 @@ uint8_t executeServerCmd(uint8_t *buffer, RDSS_t *rdss, SX1278_t *loRa,
  8001ec6:	3718      	adds	r7, #24
  8001ec8:	46bd      	mov	sp, r7
  8001eca:	bd80      	pop	{r7, pc}
- 8001ecc:	20000364 	.word	0x20000364
+ 8001ecc:	20000360 	.word	0x20000360
 
 08001ed0 <clearRx>:
 		break;
@@ -4177,7 +4179,7 @@ void processUart1Rx(UART1_t *u1, RDSS_t *rdss, Server_t *server, SX1278_t *loRa)
  8002028:	603b      	str	r3, [r7, #0]
 	if (u1->isReceivedDataReady == false)
  800202a:	68fb      	ldr	r3, [r7, #12]
- 800202c:	f893 3138 	ldrb.w	r3, [r3, #312]	; 0x138
+ 800202c:	f893 3132 	ldrb.w	r3, [r3, #306]	; 0x132
  8002030:	f083 0301 	eor.w	r3, r3, #1
  8002034:	b2db      	uxtb	r3, r3
  8002036:	2b00      	cmp	r3, #0
@@ -4186,7 +4188,7 @@ void processUart1Rx(UART1_t *u1, RDSS_t *rdss, Server_t *server, SX1278_t *loRa)
 	u1->isReceivedDataReady = false;
  800203a:	68fb      	ldr	r3, [r7, #12]
  800203c:	2200      	movs	r2, #0
- 800203e:	f883 2138 	strb.w	r2, [r3, #312]	; 0x138
+ 800203e:	f883 2132 	strb.w	r2, [r3, #306]	; 0x132
 
 	if (validate(u1->rxData, u1->rxSize) != DATA_OK) {
  8002042:	68fa      	ldr	r2, [r7, #12]
@@ -6687,8 +6689,8 @@ void *_sbrk(ptrdiff_t incr)
  8002fca:	bd80      	pop	{r7, pc}
  8002fcc:	20005000 	.word	0x20005000
  8002fd0:	00000400 	.word	0x00000400
- 8002fd4:	20000374 	.word	0x20000374
- 8002fd8:	200004c8 	.word	0x200004c8
+ 8002fd4:	20000370 	.word	0x20000370
+ 8002fd8:	200004c0 	.word	0x200004c0
 
 08002fdc <SystemInit>:
   * @note   This function should be used only after reset.
@@ -6850,7 +6852,7 @@ LoopFillZerobss:
   ldr r2, =_sbss
  8003080:	2000005c 	.word	0x2000005c
   ldr r4, =_ebss
- 8003084:	200004c4 	.word	0x200004c4
+ 8003084:	200004c0 	.word	0x200004c0
 
 08003088 <ADC1_2_IRQHandler>:
  * @retval : None
@@ -6998,7 +7000,7 @@ __weak void HAL_IncTick(void)
  8003130:	bc80      	pop	{r7}
  8003132:	4770      	bx	lr
  8003134:	20000008 	.word	0x20000008
- 8003138:	20000378 	.word	0x20000378
+ 8003138:	20000374 	.word	0x20000374
 
 0800313c <HAL_GetTick>:
   * @note  This function is declared as __weak to be overwritten in case of other
@@ -7017,7 +7019,7 @@ __weak uint32_t HAL_GetTick(void)
  8003146:	46bd      	mov	sp, r7
  8003148:	bc80      	pop	{r7}
  800314a:	4770      	bx	lr
- 800314c:	20000378 	.word	0x20000378
+ 800314c:	20000374 	.word	0x20000374
 
 08003150 <HAL_Delay>:
   *       implementations in user file.
@@ -18412,7 +18414,7 @@ static void UART_SetConfig(UART_HandleTypeDef *huart)
  80072a8:	f04f 34ff 	mov.w	r4, #4294967295
  80072ac:	4620      	mov	r0, r4
  80072ae:	bd70      	pop	{r4, r5, r6, pc}
- 80072b0:	20000380 	.word	0x20000380
+ 80072b0:	2000037c 	.word	0x2000037c
 
 080072b4 <_malloc_r>:
  80072b4:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -18523,19 +18525,19 @@ static void UART_SetConfig(UART_HandleTypeDef *huart)
  80073aa:	605b      	str	r3, [r3, #4]
  80073ac:	deff      	udf	#255	; 0xff
  80073ae:	bf00      	nop
- 80073b0:	2000037c 	.word	0x2000037c
+ 80073b0:	20000378 	.word	0x20000378
 
 080073b4 <__malloc_lock>:
  80073b4:	4801      	ldr	r0, [pc, #4]	; (80073bc <__malloc_lock+0x8>)
  80073b6:	f000 b84b 	b.w	8007450 <__retarget_lock_acquire_recursive>
  80073ba:	bf00      	nop
- 80073bc:	200004c0 	.word	0x200004c0
+ 80073bc:	200004bc 	.word	0x200004bc
 
 080073c0 <__malloc_unlock>:
  80073c0:	4801      	ldr	r0, [pc, #4]	; (80073c8 <__malloc_unlock+0x8>)
  80073c2:	f000 b846 	b.w	8007452 <__retarget_lock_release_recursive>
  80073c6:	bf00      	nop
- 80073c8:	200004c0 	.word	0x200004c0
+ 80073c8:	200004bc 	.word	0x200004bc
 
 080073cc <memset>:
  80073cc:	4603      	mov	r3, r0
@@ -18560,7 +18562,7 @@ static void UART_SetConfig(UART_HandleTypeDef *huart)
  80073f2:	b103      	cbz	r3, 80073f6 <_sbrk_r+0x1a>
  80073f4:	6023      	str	r3, [r4, #0]
  80073f6:	bd38      	pop	{r3, r4, r5, pc}
- 80073f8:	200004bc 	.word	0x200004bc
+ 80073f8:	200004b8 	.word	0x200004b8
 
 080073fc <__errno>:
  80073fc:	4b01      	ldr	r3, [pc, #4]	; (8007404 <__errno+0x8>)
@@ -18673,7 +18675,7 @@ static void UART_SetConfig(UART_HandleTypeDef *huart)
  80074da:	6054      	str	r4, [r2, #4]
  80074dc:	e7cb      	b.n	8007476 <_free_r+0x22>
  80074de:	bd38      	pop	{r3, r4, r5, pc}
- 80074e0:	2000037c 	.word	0x2000037c
+ 80074e0:	20000378 	.word	0x20000378
 
 080074e4 <_init>:
  80074e4:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
