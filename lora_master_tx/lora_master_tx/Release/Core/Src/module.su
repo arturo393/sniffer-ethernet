@@ -1,9 +1,0 @@
-../Core/Src/module.c:20:6:toneUhfInit	0	static
-../Core/Src/module.c:29:9:vladInit	16	static
-../Core/Src/module.c:67:11:serverInit	8	static
-../Core/Src/module.c:82:9:encodeVladToLtel	24	static
-../Core/Src/module.c:111:6:module_init	0	static
-../Core/Src/module.c:115:6:pa_sample_timer3_init	0	static
-../Core/Src/module.c:3:6:pa_init	8	static
-../Core/Src/module.c:132:6:module_pa_state_update	8	static
-../Core/Src/module.c:148:9:decodeVladMeasurements	40	static

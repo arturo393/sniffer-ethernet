@@ -4837,3 +4837,21 @@ org.eclipse.equinox.p2.core.ProvisionException: No repository found at https://s
 	at org.eclipse.equinox.internal.p2.updatechecker.UpdateChecker$UpdateCheckThread.run(UpdateChecker.java:78)
 !SUBENTRY 3 org.eclipse.equinox.p2.metadata.repository 4 1000 2024-01-04 09:21:32.610
 !MESSAGE No repository found at https://sw-center.st.com/stm32cubeide/eclipse/2023-09/releases.
+!SESSION 2024-01-17 10:48:36.414 -----------------------------------------------
+eclipse.buildId=Version 1.14.0
+java.version=17.0.8.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_MX
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -data C:\Users\Alfonso\sniffer-ethernet
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2024-01-17 10:48:42.796
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2024-01-17 10:48:42.798
+!MESSAGE Log4j2 initialized with config file C:\Users\Alfonso\sniffer-ethernet\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-01-17 10:48:50.953
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.core.jobs 2 2 2024-01-17 10:48:59.992
+!MESSAGE Job found still running after platform shutdown.  Jobs should be canceled by the plugin that scheduled them during shutdown: org.eclipse.ui.internal.Workbench$39
