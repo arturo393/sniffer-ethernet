@@ -1,0 +1,5 @@
+../Core/Src/eeprom.c:3:6:m24c64_page_read	16	static
+../Core/Src/eeprom.c:53:19:readPage	24	static
+../Core/Src/eeprom.c:29:6:savePage	64	static
+../Core/Src/eeprom.c:65:19:HAL_savePage	64	static
+../Core/Src/eeprom.c:88:15:getULFromEeprom	16	static

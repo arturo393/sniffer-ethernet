@@ -1,0 +1,14 @@
+../Core/Src/rs485.c:9:9:rdssInit	1
+../Core/Src/rs485.c:22:6:rdssReinit	1
+../Core/Src/rs485.c:31:15:rs485_check_CRC_module	2
+../Core/Src/rs485.c:42:15:checkModuleValidity	3
+../Core/Src/rs485.c:52:15:checkFrameValidity	4
+../Core/Src/rs485.c:67:15:checkCRCValidity	2
+../Core/Src/rs485.c:75:10:crc_get	4
+../Core/Src/rs485.c:96:15:validate	4
+../Core/Src/rs485.c:109:6:encodeVlad	1
+../Core/Src/rs485.c:133:9:setCrc	1
+../Core/Src/rs485.c:143:9:setRdssStartData	4
+../Core/Src/rs485.c:157:5:freqDecode	1
+../Core/Src/rs485.c:169:6:freqEncode	1
+../Core/Src/rs485.c:175:6:updateRdss	3
