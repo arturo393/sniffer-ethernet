@@ -9,7 +9,7 @@
 
 UART_t *uart(UART_HandleTypeDef *uart){
 	UART_t * u1;
-	u1 = malloc(sizeof(UART1_t));
+	u1 = malloc(sizeof(UART_tt));
 	u1->handler = uart;
 	u1->len = 0;
 	memset(u1->data,0,sizeof(u1->data));
@@ -18,7 +18,7 @@ UART_t *uart(UART_HandleTypeDef *uart){
 }
 
 #ifdef STM32G0
-uint8_t cleanByTimeout(UART1_t *uart1, const char *str) {
+uint8_t cleanByTimeout(UART_tt *uart1, const char *str) {
 	if (HAL_GetTick() - uart1->operationTimeout > SECONDS(5)) {
 
 		writeTxStr((char*) str);
@@ -61,7 +61,7 @@ void uart1_gpio_init() {
 	CLEAR_BIT(GPIOA->CRL, GPIO_CRL_CNF4_1);
 }
 
-void uart1Init(uint32_t pclk, uint32_t baud_rate, UART1_t *u) {
+void uart1Init(uint32_t pclk, uint32_t baud_rate, UART_tt *u) {
 	uint32_t br_value = 0;
 
 	//uart1_gpio_init();
@@ -147,7 +147,7 @@ uint8_t readRxReg(void) {
 		return '\0';
 }
 
-void readRx(UART1_t *u) {
+void readRx(UART_tt *u) {
 	if (u->rxSize >= UART2_RX_BUFFLEN) {
 		cleanRx(u);
 		u->rxSize = 0;
@@ -167,17 +167,17 @@ void writeTxBuffer(uint8_t str[], uint8_t len) {
 	}
 }
 
-void writeTx(UART1_t *uart1) {
+void writeTx(UART_tt *uart1) {
 	writeTxBuffer(uart1->txData, uart1->txSize);
 }
 
-void cleanRx(UART1_t *u) {
+void cleanRx(UART_tt *u) {
 	memset(u->data, 0, sizeof(u->data));
 	u->rxSize = 0;
 	u->isReceivedDataReady = false;
 }
 
-void cleanTx(UART1_t *u) {
+void cleanTx(UART_tt *u) {
 	memset(u->txData, 0, sizeof(u->txData));
 	u->txSize = 0;
 }

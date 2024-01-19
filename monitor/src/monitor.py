@@ -23,13 +23,13 @@ from flask_socketio import SocketIO
 from flask import Flask
 import eventlet
 
-#USBPORTTX = "COM4"
-#USBPORTRX = "COM7"
+#USBPORTTX = "COM5"
+#USBPORTRX = "COM3"
 #USBPORTAUX = "COM6"
 
-USBPORTTX = "/dev/ttyUSB0"
-USBPORTRX = "/dev/ttyUSB1"
-USBPORTAUX = "/dev/ttyUSB3"
+USBPORTTX = "/dev/ttyS0"
+USBPORTRX = "/dev/ttyS1"
+USBPORTAUX = "/dev/ttyS3"
 
 logging.basicConfig(filename=cfg.LOGGING_FILE, level=logging.DEBUG)
 
@@ -965,10 +965,10 @@ def run_monitor():
                 setSnifferData(serTx, serRx, device, data)
 
                 ### MODBUS TEST ###
-                uart_cmd = "14" #comando para que el sniffer envie el paquete via serial
+                uart_cmd = "17" #comando para que el sniffer envie el paquete via serial
                 sniffer_add = "08"
                 data = ""
-                MAXDATA = 255
+                MAXDATA = 50
                 i = 0
                 while i <= MAXDATA-10-1:
                     if i != 127:
@@ -1009,7 +1009,9 @@ def listen():
         if (serTx is None):
             try:
                 openSerialPort(USBPORTTX)    #Puerto para Tx
+                print("porttx")
                 openSerialPort(USBPORTRX)    #Puerto para Rx
+                print("portrx")
             except:
                 openSerialPort(USBPORTAUX)
 

@@ -137,9 +137,9 @@ union floatConverter {
 };
 
 uint16_t crc_get(uint8_t *buffer, uint8_t buff_len);
-RDSS_status_t rdssCheckFrame(RDSS_t *r, UART1_t *u);
-RDSS_status_t rs485_check_valid_module(UART1_t *uart1);
-RDSS_status_t rs485_check_CRC_module(UART1_t *uart1);
+RDSS_status_t rdssCheckFrame(RDSS_t *r, UART_tt *u);
+RDSS_status_t rs485_check_valid_module(UART_tt *uart1);
+RDSS_status_t rs485_check_CRC_module(UART_tt *uart1);
 RDSS_status_t checkFrameValidity(uint8_t *frame, uint8_t lenght);
 RDSS_status_t checkModuleValidity(uint8_t *frame, uint8_t lenght);
 RDSS_status_t checkCRCValidity(uint8_t *frame, uint8_t len);

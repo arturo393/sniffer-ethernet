@@ -191,27 +191,28 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 	}
 	if(dataReceived[CMD_INDEX] == QUERY_ETH){
 
-		 uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
-		 uint8_t data_enviar[size];
-		 for (uint8_t i = 0; i < size; i++){
-		   data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
-		 }
-		 eth_transmit(socket_0_register, data_enviar, size);
-		 /*
-         char enviar[] ="Hola";
-         int size =strlen(enviar)+1;
-         uint8_t data_enviar[size];
-         for (int i = 0;i<size;i++){
-         	data_enviar[i] = (uint8_t) enviar[i];
-         }
+		uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
+		uint8_t data_enviar[size];
+		for (uint8_t i = 0; i < size; i++){
+			data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
+		}
+		eth_transmit(socket_0_register, data_enviar, size);
+			 /*
+			 char enviar[] ="Hola";
+			 int size =strlen(enviar)+1;
+			 uint8_t data_enviar[size];
+			 for (int i = 0;i<size;i++){
+				data_enviar[i] = (uint8_t) enviar[i];
+			 }
 
-	     eth_transmit(socket_0_register, data_enviar, size);
-	     */
-		 //eth_transmit(socket_0_register, data_enviar, size);
+			 eth_transmit(socket_0_register, data_enviar, size);
+			 */
+			 //eth_transmit(socket_0_register, data_enviar, size);
 
 
 
 	}
+
 	else{
 		// Send response via LoRa
 		loRa->txData = dataReceived;
@@ -223,6 +224,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 	}
 	memset(loRa->rxData, 0, 300);
 	loRa->rxSize = 0;
+
 }
 
 void processReceived(Sniffer_t *sniffer) {

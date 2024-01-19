@@ -24,7 +24,7 @@ typedef struct UART1 {
 	uint32_t operationTimeout;
 	bool isReceivedDataReady;
 	bool isDebugModeEnabled;
-} UART1_t;
+} UART_tt;
 
 typedef struct {
 	UART_HandleTypeDef *handler;
@@ -39,16 +39,16 @@ typedef struct {
 } UART_t;
 
 UART_t *uart();
-uint8_t  cleanByTimeout(UART1_t* uart1,const char* str);
-void uart1Init(uint32_t, uint32_t, UART1_t*);
+uint8_t  cleanByTimeout(UART_tt* uart1,const char* str);
+void uart1Init(uint32_t, uint32_t, UART_tt*);
 void writeTxReg(volatile char);
 void writeTxStr( char*);
 void writeTxBuffer(uint8_t[], uint8_t);
-void writeTx(UART1_t *uart1);
+void writeTx(UART_tt *uart1);
 void uart1_read(char*, uint8_t);
 uint8_t readRxReg(void);
-void readRx(UART1_t *u);
-void cleanRx(UART1_t *u);
-void cleanTx(UART1_t *u);
+void readRx(UART_tt *u);
+void cleanRx(UART_tt *u);
+void cleanTx(UART_tt *u);
 
 #endif /* INC_UART1_H_ */

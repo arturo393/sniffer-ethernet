@@ -35,7 +35,7 @@ void rdssReinit(RDSS_t *rdss) {
 	rdss->idReceived = 0;       // Reset the received ID
 }
 
-RDSS_status_t rs485_check_CRC_module(UART1_t *uart1) {
+RDSS_status_t rs485_check_CRC_module(UART_tt *uart1) {
 	unsigned long crc_cal;
 	unsigned long crc_save;
 	crc_save = uart1->rxData[7] << 8;
