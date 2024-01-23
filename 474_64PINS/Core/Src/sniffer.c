@@ -155,10 +155,10 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 	SX1276_HW_t *hw = loRa->rxhw;
 
 	UART_t *serialLora = sniffer->serial_lora;
-	uint8_t zero = 0x00;                                          //////////////REVISAR///////////////
-	uint8_t base = readReg(hw, LR_RegFifoRxCurrentaddr);
+	//uint8_t zero = 0x00;                                          //////////////REVISAR///////////////
+	//uint8_t base = readReg(hw, LR_RegFifoRxCurrentaddr);
 
-	int timeStart = HAL_GetTick();
+	//int timeStart = HAL_GetTick();
 	if (loRa->rxSize > 0 ) {
 		if(loRa->rxData == NULL){
 			return;
@@ -180,8 +180,12 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
 		return;
 	}
+
+
+
 	//uint8_t auxLen = *len;
 	*len = message_package(sniffer, dataReceived);
+
 
 
 	if(dataReceived[CMD_INDEX] == QUERY_UART1){
@@ -189,6 +193,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		HAL_UART_Transmit(serialLora->handler, dataReceived+DATA_START_INDEX, *len, 100);
 		memset(serialLora->data, 0, UART_SIZE);
 	}
+
 	if(dataReceived[CMD_INDEX] == QUERY_ETH){
 
 		uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
@@ -197,30 +202,27 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 			data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
 		}
 		eth_transmit(socket_0_register, data_enviar, size);
-			 /*
-			 char enviar[] ="Hola";
-			 int size =strlen(enviar)+1;
-			 uint8_t data_enviar[size];
-			 for (int i = 0;i<size;i++){
-				data_enviar[i] = (uint8_t) enviar[i];
-			 }
-
-			 eth_transmit(socket_0_register, data_enviar, size);
-			 */
-			 //eth_transmit(socket_0_register, data_enviar, size);
+		//memset(data_enviar, 0, size);
 
 
+		// Send response via LoRa
+		loRa->txData = loRa->rxData;
+		loRa->txSize = sizeof(data_enviar)+9;
+		startTransmition(loRa);
+		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
 
 	}
 
 	else{
 		// Send response via LoRa
+		/*
 		loRa->txData = dataReceived;
 		loRa->txSize = *len;
 		int timeEnd = HAL_GetTick();
 		int time = timeEnd - timeStart; //////////REVISAR//////////
 		startTransmition(loRa);
 		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
+		*/
 	}
 	memset(loRa->rxData, 0, 300);
 	loRa->rxSize = 0;

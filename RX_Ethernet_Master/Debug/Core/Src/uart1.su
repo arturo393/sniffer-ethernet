@@ -1,0 +1,14 @@
+../Drivers/CMSIS/Include/core_cm3.h:1511:22:__NVIC_EnableIRQ	16	static
+../Core/Src/uart1.c:10:9:cleanByTimeout	16	static
+../Core/Src/uart1.c:24:6:uart1_gpio_init	4	static
+../Core/Src/uart1.c:53:6:uart1Init	32	static
+../Core/Src/uart1.c:86:6:writeTxReg	16	static
+../Core/Src/uart1.c:99:6:writeTxReg_uart2	16	static
+../Core/Src/uart1.c:113:6:uart1_read	32	static
+../Core/Src/uart1.c:139:9:readRxReg	16	static
+../Core/Src/uart1.c:153:6:readRx	24	static
+../Core/Src/uart1.c:161:6:writeTxStr	24	static
+../Core/Src/uart1.c:166:6:writeTxBuffer	24	static
+../Core/Src/uart1.c:174:6:writeTx	16	static
+../Core/Src/uart1.c:178:6:cleanRx	16	static
+../Core/Src/uart1.c:184:6:cleanTx	16	static

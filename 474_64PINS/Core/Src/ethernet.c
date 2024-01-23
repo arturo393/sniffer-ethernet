@@ -73,7 +73,6 @@ void eth_write_reg(uint8_t bsb, uint16_t address, uint8_t *data, uint16_t len) {
 	rwb = 0x01 << 2; // write
 	om = 00; // VDM
 	c_phase = bsb | rwb | om;
-	//os_address_1 = address << 8;
 	os_address = (address << 8) + ((address >> 8) & 0x00FF);
 	p = buff;
 	memcpy(p, &os_address, 2);
@@ -85,6 +84,7 @@ void eth_write_reg(uint8_t bsb, uint16_t address, uint8_t *data, uint16_t len) {
 		p += 1;
 	}
 	transmitir_spi(buff, t);
+	free(buff);
 }
 
 void socket_write_register(uint8_t *buff, uint16_t address, uint8_t bsb,
@@ -193,5 +193,6 @@ void eth_transmit(uint8_t sn_reg, uint8_t *data, uint16_t data_len) {
 	uint8_t cmd[1];
 	cmd[0] = SEND;
 	eth_write_reg(sn_reg, s_CR_offset, cmd, sizeof(cmd));
+
 }
 

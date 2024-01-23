@@ -345,7 +345,7 @@ typedef struct {
 	uint8_t rxData[300];//agregado
 	uint8_t rxSize;
 	uint8_t *txData;
-	uint8_t txSize;
+	uint16_t txSize;
 	SX1276_HW_t *txhw;
 	SX1276_HW_t *rxhw;
 	I2C_HandleTypeDef *i2c;
