@@ -21,9 +21,9 @@ while True:
         #print(c)
         if c == 255:
             #print("Line: " + ''.join(line))
-            for cmd_int in line:
-                ser.write(cmd_int.to_bytes())
-            print("Message retransmitted:")
+            #for cmd_int in line:
+                #ser.write(cmd_int.to_bytes())
+            #print("Message retransmitted:")
             print(line)
             print("Message length: " + str(len(line)))
             print("-----")
