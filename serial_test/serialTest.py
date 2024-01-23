@@ -1,55 +1,45 @@
 import serial
 import logging
+import sys
+
+logging.basicConfig(filename="serialTest.log", level=logging.DEBUG)
 
 ser = serial.Serial(
-    port='COM2',\
+    #port='COM1',\
+    port="/dev/ttyS1",\
     baudrate=19200,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
     bytesize=serial.EIGHTBITS,\
-        timeout=5)
+    timeout=5)
 
-print("Connected to: " + ser.portstr)
-
+logging.debug("Connected to port")
 #this will store the line
-#line = ''
 line = []
+received = []
+read_bytes = bytearray()
 
 while True:
-    for c in ser.read():
-        line.append(c)
-        #print(c)
-        if c == 255:
-            #print("Line: " + ''.join(line))
-            #for cmd_int in line:
-                #ser.write(cmd_int.to_bytes())
-            #print("Message retransmitted:")
-            print(line)
-            print("Message length: " + str(len(line)))
-            print("-----")
-            line = []
-            ser.flushInput()
-            ser.flushOutput()
-            break
+    #logging.debug("Starting read...")
+    try:
+        #logging.debug("Waiting...")
+        for c in ser.read():
+            line.append(c)
+            read_bytes.append(c)
+            if c == 255:
+                #logging.debug("Line: " + ''.join(line))
+                #ser.write(read_bytes)
+                #ser.flush()
+                logging.debug("Message retransmitted:")
+                logging.debug(f"{read_bytes}")
+                logging.debug("Message length: " + str(len(line)))
+                logging.debug("-----")
+                line = []
+                read_bytes = bytearray()
+                ser.flushInput()
+                ser.flushOutput()
+                break
+    except Exception as e:
+        logging.error(e)
+        sys.exit()
 ser.close()
-
-'''
-while True:
-    for c in ser.read():
-        line = line+('{0:02x}'.format(c))
-        if(c == 255):
-            #line = line[12:18]
-            #print("Line: " + ''.join(line))
-            cmd_bytes = bytearray.fromhex(line)
-            hex_byte = ''
-            for cmd_byte in cmd_bytes:
-                hex_byte = ('{0:02x}'.format(cmd_byte))
-                ser.write(bytes.fromhex(hex_byte))
-            print("Message length: " + str(int(len(line)/2)))
-            print("Message retransmitted: " + line)
-            ser.flushInput()
-            ser.flushOutput()
-            line = ''
-            break
-ser.close()
-'''

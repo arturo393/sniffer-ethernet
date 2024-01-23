@@ -1048,7 +1048,7 @@ int isEnumValue(Rs485_cmd_t value) {
 }
 void masterProcessRdss(RDSS_t *rdss) {
 	uint8_t error[] = { 0xff, 0xff, 0xff, 0xff };
-	switch (rdss->cmd) {
+	switch (loRa->rxData[CMD_INDEX]) {
 	case NONE:
 	case QUERY_MODULE_ID:
 	case QUERY_STATUS:
@@ -1086,7 +1086,7 @@ void masterProcessRdss(RDSS_t *rdss) {
 			writeTxReg(rdss->buff[i]);
 		break;
 
-	case SEND_ETH_TO_UART:
+	case QUERY_ETH:
 		for (uint8_t i = 0; i < (loRa->rxData[DATA_LENGHT1_INDEX]); i++)
 			writeTxReg_uart2(loRa->rxData[DATA_START_INDEX + i]);
 
