@@ -2,8 +2,8 @@ import serial
 import logging
 
 ser = serial.Serial(
-    port='COM1',\
-    baudrate=115200,\
+    port='COM2',\
+    baudrate=19200,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
     bytesize=serial.EIGHTBITS,\
