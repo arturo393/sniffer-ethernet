@@ -7,7 +7,7 @@ logging.basicConfig(filename="serialTest.log", level=logging.DEBUG)
 ser = serial.Serial(
     #port='COM1',\
     port="/dev/ttyS1",\
-    baudrate=19200,\
+    baudrate=115200,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
     bytesize=serial.EIGHTBITS,\

@@ -898,7 +898,7 @@ def getRealValues(deviceData):
             else:
                 out = out + f"{0:02x}"
     return out
-
+contador = 0
 def run_monitor():
     """
     run_monitor(): Main process
@@ -942,7 +942,7 @@ def run_monitor():
                 #response = sendMasterQuery(ser,times)
             #else:
                 ### QUERY ###
-            response = getSnifferStatus(serTx, serRx, device)
+            #response = getSnifferStatus(serTx, serRx, device)
 
             
             if (deviceData["type"] == "vlad"):
@@ -962,25 +962,29 @@ def run_monitor():
                 data = f"{aout1:04X}{aout2:04X}{dOut1:02X}{dOut2:02X}{serialSW:02X}"
                 ### SET DATA ###
                 #data = getRealValues(x)
-                setSnifferData(serTx, serRx, device, data)
+                #setSnifferData(serTx, serRx, device, data)
 
-                ### MODBUS TEST ###
+                                ### MODBUS TEST ###
                 uart_cmd = "17" #comando para que el sniffer envie el paquete via serial
                 sniffer_add = "08"
                 data = ""
-                MAXDATA = 50
-                i = 0
-                while i <= MAXDATA-10-1:
-                    if i != 127:
-                        aux_hex = format(i, '02x')
-                        data = data + aux_hex
-                    else: 
-                        data = data + '00'
-                    i+=1
-                data = data + 'FF' #para indicar el fin de la data en el dispositivo que recibe y reenvia serial
-                sendModbus(uart_cmd, sniffer_add, data, serTx, serRx)
+                MAXDATA = 255
+                global contador
+                SNIFFERID = 8
+                i = 1
+                if contador*5 < MAXDATA-10-1-5:
+                    while i <= contador*5:
+                        if i == 127:
+                            data = f"{data}{0:02x}"
+                        else:
+                            data = f"{data}{i:02X}"
+                        i += 1
+                    data = data + "FF"
+                else:
+                    contador = 0
+                sendModbus(uart_cmd, f"{SNIFFERID:02x}", data, serTx, serRx)
+                contador += 1
                 ### END TEST ###
-                
             else:
                 logging.debug("No response from device")
                 deviceData["connected"] = False

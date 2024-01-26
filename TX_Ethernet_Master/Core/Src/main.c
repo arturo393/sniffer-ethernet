@@ -187,9 +187,9 @@ int main(void)
 	lm75_init();
 	//HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
 	//HAL_NVIC_EnableIRQ(USART2_IRQn);
-	//HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
-	//HAL_NVIC_EnableIRQ(USART1_IRQn);
-	//HAL_UART_Receive_IT(&huart1, &rxData, 1);
+	HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(USART1_IRQn);
+	HAL_UART_Receive_IT(&huart1, &rxData, 1);
 	HAL_UART_Receive_IT(&huart2, &rxData, 1);//TODO: Para búsqueda
 
 	configureGPIO();
@@ -209,6 +209,7 @@ int main(void)
 		adcValues[1] = readADCChannel(1);
 		adcValues[2] = lm75_read();
 		updateMasterStatus(rdss, adcValues, 5000);
+		processUartRx(&u1, rdss, server, loRa);
 		processUartRx(&u2, rdss, server, loRa);
 		configureLoRaRx(loRa,MASTER_SENDER);
 		masterProcessLoRaRx(loRa, rdss, vlad);

@@ -191,7 +191,7 @@ int main(void)
 	HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 	HAL_UART_Receive_IT(&huart1, &rxData, 1);
-	//HAL_UART_Receive_IT(&huart2, &rxData, 1);//TODO: Para búsqueda
+	HAL_UART_Receive_IT(&huart2, &rxData, 1);//TODO: Para búsqueda
 
 	configureGPIO();
 	configureADC();
@@ -211,7 +211,7 @@ int main(void)
 		adcValues[2] = lm75_read();
 		updateMasterStatus(rdss, adcValues, 5000);
 		processUartRx(&u1, rdss, server, loRa); // TODO: Para búsqueda
-		//processUart2Rx(&u2, rdss, server, loRa);
+		processUart2Rx(&u2, rdss, server, loRa);
 		configureLoRaRx(loRa, MASTER_RECEIVER);
 		masterProcessLoRaRx(loRa, rdss, vlad);
 

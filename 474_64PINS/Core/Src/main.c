@@ -97,10 +97,10 @@ uint8_t set1 = 0;
 uint8_t set2 = 0;
 uint8_t time1, time2, timeNow, timeDiff;
 
-uint8_t gar[] = { 192, 168, 0, 1 };
+uint8_t gar[] = { 192, 168, 60, 1 };
 uint8_t sub_r[] = { 255, 255, 255, 0 };
 uint8_t shar[] = { 0x00, 0x08, 0xDC, 0x01, 0x02, 0x03 };
-uint8_t sipr[] = { 192, 168, 0, 2 };
+uint8_t sipr[] = { 192, 168, 60, 101 };
 uint8_t mode = 0x012;
 int8_t socket_mode = 0x01; //TCP
 uint8_t S_MR = 0x01;
@@ -295,7 +295,7 @@ int main(void) {
 	s->lora->bw = LORABW_125KHZ;
 	s->lora->dfreq = 150000000;
 	s->lora->ufreq = 170000000;
-	s->lora->sf = SF_10;
+	s->lora->sf = SF_11;
 	s->lora->cr = LORA_CR_4_5;
 	s->id = 8;
 
