@@ -54,7 +54,7 @@ void common_register_block(uint8_t *buff, uint16_t address, uint8_t *data,
 		p += 1;
 	}
 	transmitir_spi(buff, (3 + len));
-	free(buff);
+	//free(buff);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void eth_write_reg(uint8_t bsb, uint16_t address, uint8_t *data, uint16_t len) { // Los registros de socket brindan la comunicación del canal. Con BSB[4:0] se puede seleccionar el socket a utilizar
@@ -180,19 +180,42 @@ void eth_transmit(uint8_t sn_reg, uint8_t *data, uint16_t data_len) {
 	uint8_t sn_TX_R_ptr[2];
 	uint16_t ptr = 0;
 
-	eth_read_reg(sn_reg, s_TX_RD_, sn_TX_R_ptr, sizeof(sn_TX_R_ptr));
+	eth_read_reg(sn_reg, S_TX_RD_OFFSET, sn_TX_R_ptr, sizeof(sn_TX_R_ptr));
 
 	ptr = (sn_TX_R_ptr[0] << 8) + sn_TX_R_ptr[1];
-	eth_write_reg(sn_reg + TX_offset, ptr, data, data_len);
+	eth_write_reg(sn_reg + S_N_TX_OFFSET, ptr, data, data_len);
 
 	ptr = (ptr + data_len);
 	sn_TX_R_ptr[0] = (ptr >> 8) & 0x00FF;
 	sn_TX_R_ptr[1] = (ptr) & 0x00FF;
-	eth_write_reg(sn_reg, sn_TX_WR, sn_TX_R_ptr, sizeof(sn_TX_R_ptr));
+	eth_write_reg(sn_reg, S_TX_WR_OFFSET, sn_TX_R_ptr, sizeof(sn_TX_R_ptr));
 
 	uint8_t cmd[1];
-	cmd[0] = SEND;
-	eth_write_reg(sn_reg, s_CR_offset, cmd, sizeof(cmd));
+	cmd[0] = S_CR_SEND;
+	eth_write_reg(sn_reg, S_CR_OFFSET, cmd, sizeof(cmd));
 
 }
 
+void socket_cmd_cfg(uint8_t sn_reg, uint8_t cmd) {
+	// SOCK_ESTABLISHED
+	eth_write_reg(sn_reg, S_CR_OFFSET, (uint8_t*) &cmd, sizeof(cmd));
+
+}
+
+uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception) {
+	uint8_t s_RX_RD[2]; //28
+	uint8_t s_RX_RS[2]; //26
+	uint8_t len_rx;
+	uint8_t offset_address;
+
+
+	eth_read_reg(sn_reg, S_RX_RS_OFFSET, s_RX_RS, sizeof(s_RX_RS));
+	len_rx = (s_RX_RS[0] << 8) + s_RX_RS[1];
+
+	eth_read_reg(sn_reg, S_RX_RD_OFFSET, s_RX_RD, sizeof(s_RX_RD));
+	offset_address = (s_RX_RD[1] << 8) + s_RX_RD[0];
+
+	eth_read_reg(sn_reg + S_N_RX_OFFSET, offset_address, data_reception,
+			len_rx);
+	return len_rx;
+}

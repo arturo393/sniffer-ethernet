@@ -28,6 +28,7 @@
 #include "w5500_spi.h"
 #include "ethernet.h"
 #include <string.h>
+#include <stdlib.h>
 
 /* USER CODE END Includes */
 
@@ -76,7 +77,7 @@ uint8_t RWB;
 uint8_t OM;
 uint8_t DATA[240];
 uint8_t control_phase;
-uint8_t buffer[243];
+uint8_t buffer[243] = { 0 };
 uint8_t buffer_t[3];
 uint8_t *p;
 uint8_t buffer2[3000];
@@ -137,15 +138,14 @@ uint8_t s_TXBUF_SIZE; //1F
 uint8_t s_TX_FS[2]; //20
 uint8_t s_TX_RD[2]; //22
 uint8_t s_TX_WR[2]; //24
-uint8_t s_RX_RS[2]; //26
-uint8_t s_RX_RD[2]; //28
+
 uint8_t s_RX_WR[2]; //2A
 uint8_t s_IMR; //2C
 uint8_t s_FRAG[2]; //2D
 uint8_t s_KPALVTR; //2F
 
 uint8_t read_IR = 0;
-uint8_t ir_reset = 0xFF;
+
 uint8_t socket_status = 0; // 1 CON, 2 DISCN, 3 RECV, 4 TIMEOUT, 5 SENDOK
 uint8_t tx_data[4] = { 84, 69, 83, 84 }; // TEST
 uint8_t send_socket0 = 0x20;
@@ -239,6 +239,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	s->serial_lora->isReceivedDataReady = true;
 
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -252,6 +253,7 @@ int main(void) {
 	/* MCU Configuration--------------------------------------------------------*/
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
 	HAL_Init();
 
 	/* USER CODE BEGIN Init */
@@ -279,8 +281,6 @@ int main(void) {
 	MX_USART3_UART_Init();
 	/* USER CODE BEGIN 2 */
 	HAL_StatusTypeDef res;
-
-
 
 	s = sniffer(&hi2c3, adcMA);
 	s->serial_lora = uart(&huart1);
@@ -328,16 +328,23 @@ int main(void) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1); // CS HIGH DISABLE
 
 	//-----------------------------------------------------------
-	socket_write_register(buffer, 0x2E, 0x00, (uint8_t*) &_PHYCFGR_RST,
-			sizeof(_PHYCFGR_RST));
+
+	// QUE HACE ?
+	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
+			(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
+	//socket_write_register(buffer, PHYCFGR_RST_OFFSET, COMMON_REG_OFFSET, (uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
 	HAL_Delay(500);
-	socket_write_register(buffer, 0x2E, 0x00, (uint8_t*) &_PHYCFGR_NRST,
-			sizeof(_PHYCFGR_NRST));
+	// QUE HACE ?
+	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
+			(uint8_t*) &_PHYCFGR_NRST, sizeof(_PHYCFGR_NRST));
+	//socket_write_register(buffer, PHYCFGR_RST_OFFSET, COMMON_REG_OFFSET, (uint8_t*) &_PHYCFGR_NRST,sizeof(_PHYCFGR_NRST));
 	HAL_Delay(200);
+	// QUE HACE ?
 	common_reg_config(buffer, mode, gar, sub_r, shar, sipr);
+	// QUE HACE ?
 	socket_reg_config(buffer, S_MR, S_PORT, S_DHAR, S_DPORT, S_MMS, S_TTL,
 			S_RXBUF_SIZE, S_TXBUF_SIZE, S_CR_open, S_CR_listen);
-	
+
 	HAL_UART_Receive_IT(s->serial_lora->handler, s->serial_lora->data, 1);
 	/* USER CODE END 2 */
 
@@ -345,66 +352,52 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 
-		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_result, ADC_CHANNELS);
-
 		readWhenDataArrive(s->lora);
-
-
-        processReceived(s); /////////////*$$$$*************$$$$*****/////
-
+		processReceived(s); /////////////*$$$$*************$$$$*****/////
 
 
 
-		if (read_IR > 0) {
+		// LEER REGISTRO IR
 
-			if (s_con > 0) { // SOCK_ESTABLISHED
-				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_con,sizeof(S_CR_con));
+		eth_read_reg(socket_0_register,  S_IR_OFFSET, &s_IR, sizeof(s_IR));
+
+		if (s_IR & Sn_IR_MASK) {
+			if (s_IR & Sn_CONNECT) { // SOCK_ESTABLISHED
+				// QUE HACE ?
+				socket_cmd_cfg(socket_0_register, S_CR_CONNECT);
+				//socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_con,sizeof(S_CR_con));
 			}
 
-			if (s_discon > 0) { //FIN/ACK
-				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_discon,sizeof(S_CR_discon));
-				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_open,sizeof(S_CR_open));
-				socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_listen,sizeof(S_CR_listen));
+			if (s_IR & Sn_DISCONNECT) { //FIN/ACK
+				// QUE HACE ?
+				socket_cmd_cfg(socket_0_register, S_CR_DISCONECT);
+				socket_cmd_cfg(socket_0_register, S_CR_OPEN);
+				socket_cmd_cfg(socket_0_register, S_CR_LISTEN);
 			}
 
-			if (s_recv > 0) {
-				if (s_send_ok == 0) {
-
+			if ((s_IR & Sn_RECEIVE) && !(s_IR & Sn_IR_SEND_OK )) {
 					/* readDataFromEthernet */
-					len_rx = (s_RX_RS[0] << 8) + s_RX_RS[1];
-					offset_address = (s_RX_RD[1] << 8) + s_RX_RD[0];
- 					eth_read_reg(socket_0_rx_buffer,offset_address,data_reception,len_rx);
-
+					// QUE HACE ? lee data del socket ?
+					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,
+							data_reception);
 					s->eth_bufRX = data_reception;
-					s->eth_lenRX = len_rx;
-
 
 					// SIZE OF RECIEVED DATA
-					socket_write_register(buffer, 0x28, socket_0_register, &s_RX_WR[0],sizeof(s_RX_WR[0]));
-					socket_write_register(buffer, 0x29, socket_0_register, &s_RX_WR[1],sizeof(s_RX_WR[1]));
-					socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_recv,sizeof(S_CR_recv));
-					//-------------------------
+					eth_write_reg(socket_0_register, S_RX_WR0_OFFSET,
+							&s_RX_WR[0], sizeof(s_RX_WR[0]));
+					eth_write_reg(socket_0_register, S_RX_WR1_OFFSET,
+							&s_RX_WR[1], sizeof(s_RX_WR[1]));
+					eth_write_reg(socket_0_register, S_CR_OFFSET,
+							(uint8_t*) &S_CR_recv, sizeof(S_CR_recv));
+
 					offset_address = (s_TX_RD[1] << 8) + (s_TX_RD[0] & 0x00FF);
-
-					eth_read_reg(socket_0_tx_buffer,offset_address,buffer3,3000);
-
-
-				}
-			}
-			if (s_timeout > 0) {
-
+					eth_read_reg(socket_0_tx_buffer, offset_address, buffer3,
+							3000);
 			}
 
-			if (s_send_ok) {
-
-			}
-			read_IR = 0;
-			s_send_ok = 0;
-			s_timeout = 0;
-			s_recv = 0;
-			s_discon = 0;
-			s_con = 0;
-
+			uint8_t ir_reset = Sn_IR_MASK;
+			eth_write_reg(socket_0_register, S_IR_OFFSET, (uint8_t*) &ir_reset,
+					sizeof(ir_reset));
 		}
 
 
@@ -421,38 +414,33 @@ int main(void) {
 		p += 2;
 		memcpy(p, &control_phase, 1);
 
-		offset_address = 0x02 << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, &s_IR, sizeof(s_IR));
-
-       /*
-		offset_address = 0x22 << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, s_TX_RD, sizeof(s_TX_RD));
-		*/
 
 
-		 //uint8_t *buff_reg =  s_TX_RD;
-		 //uint8_t len_sIR = sizeof(s_TX_RD);
-		 //socket_read_register(socket_0_register,s_TX_RD_REG,buff_reg,len_sIR);////////////////////////////////////####################
+		/*
+		 offset_address = 0x22 << 8;
+		 p = buffer_t;
+		 memcpy(p, &offset_address, 2);
+		 transmitir_recibir_spi(buffer_t, 3, s_TX_RD, sizeof(s_TX_RD));
+		 */
 
+		//uint8_t *buff_reg =  s_TX_RD;
+		//uint8_t len_sIR = sizeof(s_TX_RD);
+		//socket_read_register(socket_0_register,s_TX_RD_REG,buff_reg,len_sIR);////////////////////////////////////####################
 		offset_address = 0x24 << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, s_TX_WR, sizeof(s_TX_WR));
+		/*
+		 offset_address = 0x26 << 8;
+		 p = buffer_t;
+		 memcpy(p, &offset_address, 2);
+		 transmitir_recibir_spi(buffer_t, 3, s_RX_RS, sizeof(s_RX_RS));
 
-		offset_address = 0x26 << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, s_RX_RS, sizeof(s_RX_RS));
-
-		offset_address = 0x28 << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, s_RX_RD, sizeof(s_RX_RD));
-
+		 offset_address = 0x28 << 8;
+		 p = buffer_t;
+		 memcpy(p, &offset_address, 2);
+		 transmitir_recibir_spi(buffer_t, 3, s_RX_RD, sizeof(s_RX_RD));
+		 */
 		offset_address = 0x2A << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
@@ -541,22 +529,7 @@ int main(void) {
 		 transmitir_recibir_spi(buffer_t, 3, &s_KPALVTR, sizeof(s_KPALVTR));
 		 */
 		//------------------------- check socket status
-		s_send_ok = s_IR & 0x10;
-		s_timeout = s_IR & 0x08;
-		s_recv = s_IR & 0x04;
-		s_discon = s_IR & 0x02;
-		s_con = s_IR & 0x01;
 
-		read_IR = s_send_ok + s_timeout + s_recv + s_discon + s_con;
-
-		if (read_IR > 0) {
-			socket_write_register(buffer, 0x02, 0x01, (uint8_t*) &ir_reset,
-					sizeof(ir_reset));
-			offset_address = 0x02 << 8;
-			p = buffer_t;
-			memcpy(p, &offset_address, 2);
-			transmitir_recibir_spi(buffer_t, 3, &s_IR, sizeof(s_IR));
-		}
 
 		//---------------------- read data buffer socket 0
 		/*
@@ -595,6 +568,7 @@ int main(void) {
 		 memcpy(p, &control_phase, 1);
 		 transmitir_recibir_spi(buffer_t, 3, buffer3, 240);
 		 */
+
 //----------------------------------------------------------------
 		/* USER CODE END WHILE */
 

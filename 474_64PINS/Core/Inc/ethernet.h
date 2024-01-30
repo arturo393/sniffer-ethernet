@@ -15,29 +15,43 @@
 extern SPI_HandleTypeDef hspi1;
 extern uint8_t *p;
 
-#define TX_offset 0x01
+//Para manejar los registros de interrupciones//
+#define Sn_IR_SEND_OK  (0xff & (1<<4))
+#define Sn_IR_TIME_OUT (0xff & (1<<3))
+#define Sn_RECEIVE     (0xff & (1<<2))
+#define Sn_DISCONNECT  (0xff & (1<<1))
+#define Sn_CONNECT     (0xff & (1<<0))
+#define Sn_IR_MASK     (0xff & ((1<<0) | (1<<1) | (1<<2) | (1<<3) | (1<<4)))
+
+#define S_N_TX_OFFSET 0x01
+#define S_N_RX_OFFSET 0x02
+//Selección bloque común de registros//
+#define COMMON_REG_OFFSET 0X00
+#define PHYCFGR_RST_OFFSET 0x2E
 //Selección de socket registers//
-#define s_CR_offset 0x01
-#define s_IR_REG 0x02
-#define s_TX_RD_ 0x22
-#define sn_TX_WR 0x24
-#define s_RX_RS_REG 0x26
-#define s_RX_RD_REG 0x28
-#define s_RX_WR_REG 0x2A
-#define s_SR_REG 0x03
-#define s_PORT_REG 0x04
-#define s_DHAR_REG 0x06
-#define s_DIPR_REG 0x0C
-#define s_DPORT_REG 0x10
-#define s_MSS_REG 0x12
-#define s_TOS_REG 0x15
-#define s_TTL_REG 0x16
-#define s_RXBUF_SIZE_REG 0x1E
-#define s_TXBUF_SIZE_REG 0x1F
-#define s_TX_FS_REG 0x20
-#define s_IMR_REG 0x2C
-#define s_FRAG_REG 0x2D
-#define s_KPALVTR_REG 0x2F
+
+#define S_CR_OFFSET 0x01
+#define S_IR_OFFSET 0x02
+#define S_TX_RD_OFFSET 0x22
+#define S_TX_WR_OFFSET 0x24
+#define S_RX_RS_OFFSET 0x26
+#define S_RX_RD_OFFSET 0x28
+#define S_RX_WR0_OFFSET 0x2A
+#define S_RX_WR1_OFFSET 0x2B
+#define S_SR_OFFSET 0x03
+#define S_PORT_OFFSET 0x04
+#define S_DHAR_OFFSET 0x06
+#define S_DIPR_OFFSET 0x0C
+#define S_DPORT_OFFSET 0x10
+#define S_MSS_OFFSET 0x12
+#define S_TOS_OFFSET 0x15
+#define S_TTL_OFFSET 0x16
+#define S_RXBUF_SIZE_OFFSET 0x1E
+#define S_TXBUF_SIZE_OFFSET 0x1F
+#define S_TX_FS_OFFSET 0x20
+#define S_IMR_OFFSET 0x2C
+#define S_FRAG_OFFSET 0x2D
+#define S_KPALVTR_OFFSET 0x2F
 
 // PARA SELECCIÓN DE BLOQUES DE REGISTROS DE SOCKET//
 #define socket_0_register 0x01
@@ -71,15 +85,15 @@ extern uint8_t *p;
 #define socket_7_rx_buffer 0x1F
 
 //PARA ENVÍO EN SOCKET RESPECTIVO//
-#define OPEN 0x01
-#define LISTEN 0x02
-#define CONNECT 0x04
-#define DISCON 0x08
-#define CLOSE 0x10
-#define SEND 0x20
-#define SEND_MAC 0x21
-#define SEND_KEEP 0x22
-#define RECV 0x40
+#define S_CR_OPEN 0x01
+#define S_CR_LISTEN 0x02
+#define S_CR_CONNECT 0x04
+#define S_CR_DISCONECT 0x08
+#define S_CR_CLOSE 0x10
+#define S_CR_SEND 0x20
+#define S_CR_SEND_MAC 0x21
+#define S_CR_SEND_KEEP 0x22
+#define S_CR_RECV 0x40
 
 // Funciones de transmisión recepción vía SPI:
 void transmitir_spi(uint8_t* p, uint8_t len);
@@ -89,7 +103,7 @@ void eth_read_reg(uint8_t BSB_SELECT,uint8_t addr, uint8_t *buffer_r, uint16_t b
 // Funciones para el ajuste de los registros del chip w5500:
 void common_register_block(uint8_t* buff, uint16_t address, uint8_t* data,uint8_t len);
 void socket_write_register(uint8_t* buff, uint16_t address,uint8_t bsb, uint8_t* data,uint16_t len);
-
+void eth_write_reg(uint8_t bsb, uint16_t address, uint8_t *data, uint16_t len);
 void common_reg_config(uint8_t buffer[243], uint8_t mode, uint8_t gar[],uint8_t sub_r[], uint8_t shar[], uint8_t sipr[]);
 void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
 		uint8_t S_DHAR[6], uint8_t S_DPORT[2], uint8_t S_MMS[2], uint8_t S_TTL,
@@ -97,5 +111,6 @@ void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
 		uint8_t S_CR_listen);
 //Transmitir por ethernet
 void eth_transmit(uint8_t socket_n_register, uint8_t *data_transmitir, uint16_t data_len);
-
+void socket_cmd_cfg(uint8_t sn_reg, uint8_t cmd);
+uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception);
 #endif /* INC_ETHERNET_H_ */
