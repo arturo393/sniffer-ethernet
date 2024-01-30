@@ -393,7 +393,7 @@ int main(void) {
 
 
 		//----------------------- lectura registros
-
+        /*
 		offset_address = 0x00 << 8;
 		BSB = 0x01 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
 		RWB = 0x00 << 2; // read
@@ -404,165 +404,15 @@ int main(void) {
 		p += 2;
 		memcpy(p, &control_phase, 1);
 
-
-
-		/*
-		 offset_address = 0x22 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_TX_RD, sizeof(s_TX_RD));
-		 */
-
-		//uint8_t *buff_reg =  s_TX_RD;
-		//uint8_t len_sIR = sizeof(s_TX_RD);
-		//socket_read_register(socket_0_register,s_TX_RD_REG,buff_reg,len_sIR);////////////////////////////////////####################
-		offset_address = 0x24 << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, s_TX_WR, sizeof(s_TX_WR));
-		/*
-		 offset_address = 0x26 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_RX_RS, sizeof(s_RX_RS));
-
-		 offset_address = 0x28 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_RX_RD, sizeof(s_RX_RD));
-		 */
-
-		/*
-		offset_address = 0x2A << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, s_RX_WR, sizeof(s_RX_WR));
-        */
-
 		offset_address = 0x03 << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, &s_SR, sizeof(s_SR));
+		*/
 
-		/*
-		 transmitir_recibir_spi(buffer_t, 3, &s_MR, sizeof(s_MR));
-
-		 offset_address = 0x01 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_CR, sizeof(s_CR));
-
-		 offset_address = 0x03 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_SR, sizeof(s_SR));
-
-		 offset_address = 0x04 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_PORT, sizeof(s_PORT));
-
-		 offset_address = 0x06 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_DHAR, sizeof(s_DHAR));
-
-		 offset_address = 0x0C << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_DIPR, sizeof(s_DIPR));
-
-		 offset_address = 0x10 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_DPORT, sizeof(s_DPORT));
-
-		 offset_address = 0x12 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_MSS, sizeof(s_MSS));
-
-		 offset_address = 0x15 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_TOS, sizeof(s_TOS));
-
-		 offset_address = 0x16 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_TTL, sizeof(s_TTL));
-
-		 offset_address = 0x1E << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_RXBUF_SIZE, sizeof(s_RXBUF_SIZE));
-
-		 offset_address = 0x1F << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_TXBUF_SIZE, sizeof(s_TXBUF_SIZE));
-
-		 offset_address = 0x20 << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_TX_FS, sizeof(s_TX_FS));
-
-		 offset_address = 0x2C << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_IMR, sizeof(s_IMR));
-
-		 offset_address = 0x2D << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, s_FRAG, sizeof(s_FRAG));
-
-		 offset_address = 0x2F << 8;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 transmitir_recibir_spi(buffer_t, 3, &s_KPALVTR, sizeof(s_KPALVTR));
-		 */
-		//------------------------- check socket status
+		eth_read_reg(socket_0_register,  S_SR_OFFSET, &s_SR, sizeof(s_SR));
 
 
-		//---------------------- read data buffer socket 0
-		/*
-		 offset_address = 0x00 << 8;
-		 BSB = 0x03 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
-		 RWB = 0x00 << 2; // read
-		 OM = 00; // VDM
-		 control_phase = BSB | RWB | OM;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 p += 2;
-		 memcpy(p, &control_phase, 1);
-		 transmitir_recibir_spi(buffer_t, 3, buffer2,2900);
-		 */
-        /*
-		offset_address = 0x00 << 8;
-		BSB = 0x03 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
-		RWB = 0x00 << 2; // read
-		OM = 00; // VDM
-		control_phase = BSB | RWB | OM;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		p += 2;
-		memcpy(p, &control_phase, 1);
-		transmitir_recibir_spi(buffer_t, 3, buffer2, 2900);
-         */
-
-		/*
-		 offset_address = 0x00 << 8;
-		 BSB = 0x02 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
-		 RWB = 0x00 << 2; // read
-		 OM = 00; // VDM
-		 control_phase = BSB | RWB | OM;
-		 p = buffer_t;
-		 memcpy(p, &offset_address, 2);
-		 p += 2;
-		 memcpy(p, &control_phase, 1);
-		 transmitir_recibir_spi(buffer_t, 3, buffer3, 240);
-		 */
 
 //----------------------------------------------------------------
 		/* USER CODE END WHILE */
