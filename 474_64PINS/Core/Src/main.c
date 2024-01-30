@@ -346,6 +346,8 @@ int main(void) {
 			S_RXBUF_SIZE, S_TXBUF_SIZE, S_CR_open, S_CR_listen);
 
 	HAL_UART_Receive_IT(s->serial_lora->handler, s->serial_lora->data, 1);
+
+	// QUE HACE ?
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -375,24 +377,15 @@ int main(void) {
 				socket_cmd_cfg(socket_0_register, S_CR_LISTEN);
 			}
 
-			if ((s_IR & Sn_RECEIVE) && !(s_IR & Sn_IR_SEND_OK )) {
+			if ((s_IR & Sn_RECEIVE)) {
 					/* readDataFromEthernet */
 					// QUE HACE ? lee data del socket ?
 					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,
 							data_reception);
 					s->eth_bufRX = data_reception;
 
-					// SIZE OF RECIEVED DATA
-					eth_write_reg(socket_0_register, S_RX_WR0_OFFSET,
-							&s_RX_WR[0], sizeof(s_RX_WR[0]));
-					eth_write_reg(socket_0_register, S_RX_WR1_OFFSET,
-							&s_RX_WR[1], sizeof(s_RX_WR[1]));
 					eth_write_reg(socket_0_register, S_CR_OFFSET,
 							(uint8_t*) &S_CR_recv, sizeof(S_CR_recv));
-
-					offset_address = (s_TX_RD[1] << 8) + (s_TX_RD[0] & 0x00FF);
-					eth_read_reg(socket_0_tx_buffer, offset_address, buffer3,
-							3000);
 			}
 
 			uint8_t ir_reset = Sn_IR_MASK;
