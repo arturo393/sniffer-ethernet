@@ -380,12 +380,9 @@ int main(void) {
 			if ((s_IR & Sn_RECEIVE)) {
 					/* readDataFromEthernet */
 					// QUE HACE ? lee data del socket ?
-					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,
-							data_reception);
+					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,data_reception);
 					s->eth_bufRX = data_reception;
-
-					eth_write_reg(socket_0_register, S_CR_OFFSET,
-							(uint8_t*) &S_CR_recv, sizeof(S_CR_recv));
+					socket_cmd_cfg(socket_0_register, S_CR_RECV);
 			}
 
 			uint8_t ir_reset = Sn_IR_MASK;
@@ -434,15 +431,19 @@ int main(void) {
 		 memcpy(p, &offset_address, 2);
 		 transmitir_recibir_spi(buffer_t, 3, s_RX_RD, sizeof(s_RX_RD));
 		 */
+
+		/*
 		offset_address = 0x2A << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, s_RX_WR, sizeof(s_RX_WR));
+        */
 
 		offset_address = 0x03 << 8;
 		p = buffer_t;
 		memcpy(p, &offset_address, 2);
 		transmitir_recibir_spi(buffer_t, 3, &s_SR, sizeof(s_SR));
+
 		/*
 		 transmitir_recibir_spi(buffer_t, 3, &s_MR, sizeof(s_MR));
 
@@ -537,7 +538,7 @@ int main(void) {
 		 memcpy(p, &control_phase, 1);
 		 transmitir_recibir_spi(buffer_t, 3, buffer2,2900);
 		 */
-
+        /*
 		offset_address = 0x00 << 8;
 		BSB = 0x03 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
 		RWB = 0x00 << 2; // read
@@ -548,6 +549,7 @@ int main(void) {
 		p += 2;
 		memcpy(p, &control_phase, 1);
 		transmitir_recibir_spi(buffer_t, 3, buffer2, 2900);
+         */
 
 		/*
 		 offset_address = 0x00 << 8;

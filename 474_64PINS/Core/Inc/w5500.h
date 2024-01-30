@@ -1014,7 +1014,7 @@ extern "C" {
  * For more details, refer to Socket n RX Received Size Register (@ref Sn_RX_RSR), Socket n RX Write Pointer Register (@ref Sn_RX_WR),
  * and Socket n RX Read Pointer Register (@ref Sn_RX_RD).
  */
-#define Sn_CR_RECV                   0x40
+#define Sn_CR_RECEIVE                   0x40
 
 /* Sn_IR values */
 /**

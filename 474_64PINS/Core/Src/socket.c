@@ -463,7 +463,7 @@ int32_t recv(uint8_t sn, uint8_t * buf, uint16_t len)
    if(recvsize != 0)
    {
       wiz_recv_data(sn, buf, recvsize);
-      setSn_CR(sn,Sn_CR_RECV);
+      setSn_CR(sn,Sn_CR_RECEIVE);
       while(getSn_CR(sn));
    }
    sock_remained_size[sn] -= recvsize;
@@ -478,7 +478,7 @@ int32_t recv(uint8_t sn, uint8_t * buf, uint16_t len)
 #else   
    if(recvsize < len) len = recvsize;   
    wiz_recv_data(sn, buf, len);
-   setSn_CR(sn,Sn_CR_RECV);
+   setSn_CR(sn,Sn_CR_RECEIVE);
    while(getSn_CR(sn));
 #endif
      
@@ -643,7 +643,7 @@ int32_t recvfrom(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16
 	      if(sock_remained_size[sn] == 0)
 	      {
    			wiz_recv_data(sn, head, 8);
-   			setSn_CR(sn,Sn_CR_RECV);
+   			setSn_CR(sn,Sn_CR_RECEIVE);
    			while(getSn_CR(sn));
    			// read peer's IP address, port number & packet length
    	   //A20150601 : For W5300
@@ -697,7 +697,7 @@ int32_t recvfrom(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16
 	      if(sock_remained_size[sn] == 0)
 	      {
    			wiz_recv_data(sn, head, 2);
-   			setSn_CR(sn,Sn_CR_RECV);
+   			setSn_CR(sn,Sn_CR_RECEIVE);
    			while(getSn_CR(sn));
    			// read peer's IP address, port number & packet length
     			sock_remained_size[sn] = head[0];
@@ -724,7 +724,7 @@ int32_t recvfrom(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16
 		   if(sock_remained_size[sn] == 0)
 		   {
    			wiz_recv_data(sn, head, 6);
-   			setSn_CR(sn,Sn_CR_RECV);
+   			setSn_CR(sn,Sn_CR_RECEIVE);
    			while(getSn_CR(sn));
    			addr[0] = head[0];
    			addr[1] = head[1];
@@ -749,7 +749,7 @@ int32_t recvfrom(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16
          sock_remained_size[sn] = pack_len;
          break;
    }
-	setSn_CR(sn,Sn_CR_RECV);
+	setSn_CR(sn,Sn_CR_RECEIVE);
 	/* wait to process the command... */
 	while(getSn_CR(sn)) ;
 	sock_remained_size[sn] -= pack_len;

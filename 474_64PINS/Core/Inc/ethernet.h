@@ -113,4 +113,9 @@ void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
 void eth_transmit(uint8_t socket_n_register, uint8_t *data_transmitir, uint16_t data_len);
 void socket_cmd_cfg(uint8_t sn_reg, uint8_t cmd);
 uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception);
+uint8_t update_socket_n_rx_buffer_read_addr(uint8_t sn_reg);
+uint16_t read_socket_n_rx_buffer_len(uint8_t sn_reg);
+uint16_t read_socket_n_rx_buffer_read_addr(uint8_t sn_reg);
+void update_socket_n_rx_buffer_addr(uint8_t sn_reg, uint16_t offset_address);
+uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception);
 #endif /* INC_ETHERNET_H_ */

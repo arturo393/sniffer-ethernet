@@ -177,18 +177,18 @@ void eth_transmit(uint8_t sn_reg, uint8_t *data, uint16_t data_len) {
 	 4. Transmit the saved data in Socket n TX Buffer by using SEND/SEND
 	 command
 	 */
-	uint8_t sn_TX_R_ptr[2];
+	uint8_t s_TX_RD[2];
 	uint16_t ptr = 0;
 
-	eth_read_reg(sn_reg, S_TX_RD_OFFSET, sn_TX_R_ptr, sizeof(sn_TX_R_ptr));
+	eth_read_reg(sn_reg, S_TX_RD_OFFSET, s_TX_RD, sizeof(s_TX_RD));
 
-	ptr = (sn_TX_R_ptr[0] << 8) + sn_TX_R_ptr[1];
+	ptr = (s_TX_RD[0] << 8) + s_TX_RD[1];
 	eth_write_reg(sn_reg + S_N_TX_OFFSET, ptr, data, data_len);
 
 	ptr = (ptr + data_len);
-	sn_TX_R_ptr[0] = (ptr >> 8) & 0x00FF;
-	sn_TX_R_ptr[1] = (ptr) & 0x00FF;
-	eth_write_reg(sn_reg, S_TX_WR_OFFSET, sn_TX_R_ptr, sizeof(sn_TX_R_ptr));
+	s_TX_RD[0] = (ptr >> 8) & 0x00FF;
+	s_TX_RD[1] = (ptr) & 0x00FF;
+	eth_write_reg(sn_reg, S_TX_WR_OFFSET, s_TX_RD, sizeof(s_TX_RD));
 
 	uint8_t cmd[1];
 	cmd[0] = S_CR_SEND;
@@ -202,20 +202,49 @@ void socket_cmd_cfg(uint8_t sn_reg, uint8_t cmd) {
 
 }
 
-uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception) {
-	uint8_t s_RX_RD[2]; //28
-	uint8_t s_RX_RS[2]; //26
-	uint8_t len_rx;
-	uint8_t offset_address;
-
-
+uint16_t read_socket_n_rx_buffer_len(uint8_t sn_reg) {
+	uint8_t s_RX_RS[2];
 	eth_read_reg(sn_reg, S_RX_RS_OFFSET, s_RX_RS, sizeof(s_RX_RS));
-	len_rx = (s_RX_RS[0] << 8) + s_RX_RS[1];
+	return ((s_RX_RS[1]) & 0xFFFF) | ((s_RX_RS[0] << 8) & 0xFFFF);
+}
 
+uint16_t read_socket_n_rx_buffer_read_addr(uint8_t sn_reg) {
+	uint8_t s_RX_RD[2];
 	eth_read_reg(sn_reg, S_RX_RD_OFFSET, s_RX_RD, sizeof(s_RX_RD));
-	offset_address = (s_RX_RD[1] << 8) + s_RX_RD[0];
+	return ((s_RX_RD[1]) & 0xFFFF) | ((s_RX_RD[0] << 8) & 0xFFFF);
+}
+
+void update_socket_n_rx_buffer_addr(uint8_t sn_reg, uint16_t offset_address) {
+	uint8_t s_RX_RD[2];
+	s_RX_RD[0] = (offset_address >> 8) & 0xFF;
+	s_RX_RD[1] = (offset_address) & 0xFF;
+	eth_write_reg(sn_reg, S_RX_RD_OFFSET, s_RX_RD, sizeof(s_RX_RD));
+}
+
+uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception) {
+	uint16_t len_rx;
+	uint16_t offset_address;
+
+	len_rx = read_socket_n_rx_buffer_len(sn_reg);
+
+	if (len_rx <= 0)
+		return (0);
+
+	offset_address = read_socket_n_rx_buffer_read_addr(sn_reg);
 
 	eth_read_reg(sn_reg + S_N_RX_OFFSET, offset_address, data_reception,
 			len_rx);
+
+	for (int i = 1; i <= len_rx; i++) {
+
+		if (offset_address == 0xFFFF) {
+			uint8_t a;
+			a++;
+		}
+		offset_address++;
+	}
+
+	update_socket_n_rx_buffer_addr(sn_reg, offset_address);
+
 	return len_rx;
 }

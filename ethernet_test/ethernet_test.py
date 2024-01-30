@@ -33,7 +33,7 @@ while True:
                     if last_chunk:  # Check if there's any data in the last chunk
                         logging.debug(f"{last_chunk.hex()!r}")
 
-                    data = bytearray(data)
+                    data = bytearray(data).append(bytearray(data))
                     logging.debug(f"Message retransmitted: 0x{(len(data)):02x}")
                     sock.sendall(data)
 

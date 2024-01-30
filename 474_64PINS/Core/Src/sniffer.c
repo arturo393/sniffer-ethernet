@@ -121,16 +121,11 @@ void processReceivedEthernet(Sniffer_t *sniffer){///////////////////////########
 
 	//añadir filtros aca
 
-	//*len = packet_message(sniffer, dataReceived,*len, QUERY_ETH);
+	*len = packet_message(sniffer, dataReceived,*len, QUERY_ETH);
 
 	 // Send response via LoRa
-	uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
-	uint8_t data_enviar[size];
-	for (uint8_t i = 0; i < size; i++){
-		data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
-	}
 	loRa->txData = sniffer-> eth_bufRX;
-	loRa->txSize = sizeof(data_enviar)+9;
+	loRa->txSize = *len;
 	startTransmition(loRa);
 	startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
 	memset(loRa->rxData, 0, 300);
@@ -205,9 +200,19 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		for (uint8_t i = 0; i < size; i++){
 			data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
 		}
-		eth_transmit(socket_0_register, data_enviar, size);
-		//memset(data_enviar, 0, size);
 
+		eth_transmit(socket_0_register, data_enviar, size);
+
+
+		/*
+		uint8_t *arreglo = (uint8_t *) malloc(1024* sizeof(uint8_t));
+		for (int i = 0; i < 1024; i++) {
+		  arreglo[i] = 0x23;
+		}
+
+		eth_transmit(socket_0_register, arreglo, 1024);
+		free(arreglo);
+        */
 
 
 
