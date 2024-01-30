@@ -22,7 +22,17 @@ while True:
                 try:
                     logging.debug("Waiting for data:")
                     data = sock.recv(1024)  # Receive 1024 bytes at a time
-                    logging.debug('Recibido {!r}'.format(data))
+                    offset = 0
+                    while offset < len(data):
+                        chunk = data[offset:offset + 100]
+                        logging.debug(f"{chunk.hex()!r}")
+                        offset += 100
+
+                    # Handle the last chunk if less than 100 bytes
+                    last_chunk = data[offset:]
+                    if last_chunk:  # Check if there's any data in the last chunk
+                        logging.debug(f"{last_chunk.hex()!r}")
+
                     data = bytearray(data)
                     logging.debug("Message retransmitted:")
                     sock.sendall(data)
