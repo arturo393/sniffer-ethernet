@@ -34,7 +34,7 @@ while True:
                         logging.debug(f"{last_chunk.hex()!r}")
 
                     data = bytearray(data)
-                    logging.debug("Message retransmitted:")
+                    logging.debug(f"Message retransmitted: 0x{(len(data)):02x}")
                     sock.sendall(data)
 
                 except socket.timeout:
