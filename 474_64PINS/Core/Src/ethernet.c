@@ -112,20 +112,18 @@ void socket_write_register(uint8_t *buff, uint16_t address, uint8_t bsb,
 	transmitir_spi(buff, t);
 }
 
-void eth_read_reg(uint8_t BSB_SELECT, uint8_t addr, uint8_t *buffer_r,
+void eth_read_reg(uint8_t BSB_SELECT, uint16_t offset, uint8_t *buffer_r,
 		uint16_t buffer_r_len) {
 	uint16_t offset_address = 0; /*revisar esta inicialización*/
 	uint8_t buffer_t[3];
-	offset_address = addr << 8;
+	offset_address = offset << 8;
 	uint8_t BSB = BSB_SELECT << 3; // block select bit: 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
 	uint8_t RWB = 0x00 << 2; // read
 	uint8_t OM = 00; // VDM
 	uint8_t control_phase = BSB | RWB | OM;
-	p = buffer_t;
-	p += 2;
-	memcpy(p, &control_phase, 1);
-	p = buffer_t;
-	memcpy(p, &offset_address, 2);
+	buffer_t[0] = (offset >> 8) & 0xFF;
+	buffer_t[1] = (offset & 0xFF);
+	buffer_t[2] = control_phase;
 	transmitir_recibir_spi(buffer_t, 3, buffer_r, buffer_r_len);
 }
 
@@ -216,35 +214,25 @@ uint16_t read_socket_n_rx_buffer_read_addr(uint8_t sn_reg) {
 
 void update_socket_n_rx_buffer_addr(uint8_t sn_reg, uint16_t offset_address) {
 	uint8_t s_RX_RD[2];
-	s_RX_RD[0] = (offset_address >> 8) & 0xFF;
-	s_RX_RD[1] = (offset_address) & 0xFF;
-	eth_write_reg(sn_reg, S_RX_RD_OFFSET, s_RX_RD, sizeof(s_RX_RD));
+	s_RX_RD[0] = (offset_address >> 8) & 0x00FF;
+	s_RX_RD[1] = (offset_address) & 0x00FF;
+	eth_write_reg(sn_reg, S_RX_RD_OFFSET, &(s_RX_RD[0]), 1);
+	eth_write_reg(sn_reg, S_RX_RD_OFFSET+1, &(s_RX_RD[1]), 1);
 }
 
-uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception) {
+uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_rcv) {
 	uint16_t len_rx;
-	uint16_t offset_address;
-
 	len_rx = read_socket_n_rx_buffer_len(sn_reg);
+	uint8_t S_RX_WR0[2];
 
 	if (len_rx <= 0)
 		return (0);
-
-	offset_address = read_socket_n_rx_buffer_read_addr(sn_reg);
-
-	eth_read_reg(sn_reg + S_N_RX_OFFSET, offset_address, data_reception,
-			len_rx);
-
-	for (int i = 1; i <= len_rx; i++) {
-
-		if (offset_address == 0xFFFF) {
-			uint8_t a;
-			a++;
-		}
-		offset_address++;
-	}
-
-	update_socket_n_rx_buffer_addr(sn_reg, offset_address);
-
+	data_rcv = malloc(sizeof(uint8_t) * len_rx);
+	if (data_rcv == NULL)
+		return (0);
+	s_RX_RD_addr = read_socket_n_rx_buffer_read_addr(sn_reg);
+	eth_read_reg(sn_reg + S_N_RX_OFFSET, s_RX_RD_addr, data_rcv, len_rx);
+	s_RX_RD_addr_updated = s_RX_RD_addr + len_rx;
+	update_socket_n_rx_buffer_addr(sn_reg, s_RX_RD_addr_updated);
 	return len_rx;
 }

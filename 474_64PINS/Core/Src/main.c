@@ -159,7 +159,6 @@ uint8_t s_discon = 0; //0x02
 uint8_t s_con = 0; //0x01
 uint16_t len_rx = 0;
 uint16_t offset_read = 0;
-uint8_t data_reception[3000];
 uint8_t data_transmition[3000];
 
 /* USER CODE END PV */
@@ -248,6 +247,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
+	 uint32_t keep_alive_counter = HAL_GetTick();
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -295,7 +295,7 @@ int main(void) {
 	s->lora->bw = LORABW_125KHZ;
 	s->lora->dfreq = 150000000;
 	s->lora->ufreq = 170000000;
-	s->lora->sf = SF_11;
+	s->lora->sf = SF_7;
 	s->lora->cr = LORA_CR_4_5;
 	s->id = 8;
 
@@ -329,19 +329,18 @@ int main(void) {
 
 	//-----------------------------------------------------------
 
-	// QUE HACE ?
+	//configuración as//
 	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
 			(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
-	//socket_write_register(buffer, PHYCFGR_RST_OFFSET, COMMON_REG_OFFSET, (uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
 	HAL_Delay(500);
-	// QUE HACE ?
 	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
 			(uint8_t*) &_PHYCFGR_NRST, sizeof(_PHYCFGR_NRST));
-	//socket_write_register(buffer, PHYCFGR_RST_OFFSET, COMMON_REG_OFFSET, (uint8_t*) &_PHYCFGR_NRST,sizeof(_PHYCFGR_NRST));
 	HAL_Delay(200);
-	// QUE HACE ?
+
+
+	//configuración de registros comunes
 	common_reg_config(buffer, mode, gar, sub_r, shar, sipr);
-	// QUE HACE ?
+
 	socket_reg_config(buffer, S_MR, S_PORT, S_DHAR, S_DPORT, S_MMS, S_TTL,
 			S_RXBUF_SIZE, S_TXBUF_SIZE, S_CR_open, S_CR_listen);
 
@@ -355,66 +354,54 @@ int main(void) {
 	while (1) {
 
 		readWhenDataArrive(s->lora);
-		processReceived(s); /////////////*$$$$*************$$$$*****/////
+		processReceived(s);
 
-
+		if(s->eth_bufRX != NULL){
+			free(s->eth_bufRX);
+			s->eth_bufRX = NULL;
+		}
 
 		// LEER REGISTRO IR
-
 		eth_read_reg(socket_0_register,  S_IR_OFFSET, &s_IR, sizeof(s_IR));
-
 		if (s_IR & Sn_IR_MASK) {
-			if (s_IR & Sn_CONNECT) { // SOCK_ESTABLISHED
-				// QUE HACE ?
+			uint8_t ir_reset;
+			if (s_IR & Sn_CONNECT){  // SOCK_ESTABLISHED
 				socket_cmd_cfg(socket_0_register, S_CR_CONNECT);
-				//socket_write_register(buffer, 0x01, socket_0_register, (uint8_t*) &S_CR_con,sizeof(S_CR_con));
+				ir_reset = Sn_CONNECT;
 			}
-
 			if (s_IR & Sn_DISCONNECT) { //FIN/ACK
-				// QUE HACE ?
 				socket_cmd_cfg(socket_0_register, S_CR_DISCONECT);
 				socket_cmd_cfg(socket_0_register, S_CR_OPEN);
 				socket_cmd_cfg(socket_0_register, S_CR_LISTEN);
+				ir_reset = Sn_DISCONNECT;
 			}
-
 			if ((s_IR & Sn_RECEIVE)) {
 					/* readDataFromEthernet */
-					// QUE HACE ? lee data del socket ?
-					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,data_reception);
-					s->eth_bufRX = data_reception;
+					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,s->eth_bufRX);
 					socket_cmd_cfg(socket_0_register, S_CR_RECV);
+					ir_reset = Sn_RECEIVE;
 			}
-
-			uint8_t ir_reset = Sn_IR_MASK;
 			eth_write_reg(socket_0_register, S_IR_OFFSET, (uint8_t*) &ir_reset,
 					sizeof(ir_reset));
+
 		}
 
 
 
-		//----------------------- lectura registros
-        /*
-		offset_address = 0x00 << 8;
-		BSB = 0x01 << 3; // block select bit 0x01 SOCKET REGISTER, 0x02 SOCKET TX BUFFER, 0x03 SOCKET RX BUFFER
-		RWB = 0x00 << 2; // read
-		OM = 00; // VDM
-		control_phase = BSB | RWB | OM;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		p += 2;
-		memcpy(p, &control_phase, 1);
 
-		offset_address = 0x03 << 8;
-		p = buffer_t;
-		memcpy(p, &offset_address, 2);
-		transmitir_recibir_spi(buffer_t, 3, &s_SR, sizeof(s_SR));
-		*/
-
+        // lectura status del socket
 		eth_read_reg(socket_0_register,  S_SR_OFFSET, &s_SR, sizeof(s_SR));
 
 
+		if (HAL_GetTick() - keep_alive_counter > 1000)
+		              keep_alive_counter = HAL_GetTick();
+		          else {
+		              if (HAL_GetTick() - keep_alive_counter > 50)
+		                HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_RESET);
+		              else
+		                HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_SET);
+		          }
 
-//----------------------------------------------------------------
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */

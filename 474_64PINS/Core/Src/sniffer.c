@@ -6,7 +6,6 @@
  */
 #include "sniffer.h"
 
-
 uint32_t adcValues[ADC_CHANNELS];
 uint8_t adcCounter[ADC_CHANNELS] = { 0 };
 uint16_t adcReadings[ADC_CHANNELS][ADC_WINDOW_SIZE] = { 0 };
@@ -17,20 +16,13 @@ Sniffer_t* sniffer(I2C_HandleTypeDef *i2c, uint16_t *adcBuffer) {
 	Sniffer_t *s;
 	s = malloc(sizeof(Sniffer_t));
 
-
 	if (s != NULL) {
 		s->function = SNIFFER;
 		s->i2c = i2c;
 		s->id = readEepromData(s, ID);
 		s->function = readEepromData(s, FUNCTION);
-		s->aOut1_0_10V = readEepromData(s, AOUT_0_10V);
-		s->aOut2_x_20mA = readEepromData(s, AOUT_0_20mA);
-		s->aOut3 = readEepromData(s, AOUT_4_20mA);
-		s->dOut = readEepromData(s, DOUT);
-		s->aIn1_0_10V = adcBuffer + VOLTAGE0_10V_CH;
-		s->aIn2_x_20mA = adcBuffer + SENSOR0_20mA_CH; ///////////REVISAR////////////
-		s->aIn2_x_20mA = adcBuffer + SENSOR4_20mACH;
 		s->eth_lenRX = 0;
+		s->eth_bufRX = NULL;
 	}
 	return (s);
 }
@@ -41,7 +33,6 @@ void processReceivedSerialConfig(Sniffer_t *sniffer) {
 	uint8_t *len = &(serialConfig->len);
 	LORA_t *loRa = sniffer->lora;
 	SX1276_HW_t *hw = loRa->rxhw;
-
 
 	// Data validation
 	if (*len < MINIMUM_FRAME_LEN || dataReceived[START_INDEX] != RDSS_START_MARK
@@ -54,35 +45,35 @@ void processReceivedSerialConfig(Sniffer_t *sniffer) {
 		return;
 	}
 	/*
-	*len = exec(sniffer, dataReceived);
-	// Send response via UART
-	HAL_UART_Transmit(serialConfig->handler, dataReceived, *len, 100);
-	//serialConfig->isReceivedDataReady = false;
-	memset(serialConfig->data, 0, UART_SIZE);
-	*/
+	 *len = exec(sniffer, dataReceived);
+	 // Send response via UART
+	 HAL_UART_Transmit(serialConfig->handler, dataReceived, *len, 100);
+	 //serialConfig->isReceivedDataReady = false;
+	 memset(serialConfig->data, 0, UART_SIZE);
+	 */
 
-	*len = packet_message(sniffer, dataReceived,*len,QUERY_UART1); /// o set_uart_1 según corresponda
+	*len = packet_message(sniffer, dataReceived, *len, QUERY_UART1); /// o set_uart_1 según corresponda
 
 	// Send response via LoRa
 	loRa->txData = dataReceived;
 	loRa->txSize = *len;
 	startTransmition(loRa);
-	startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
+	startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
 	memset(loRa->rxData, 0, 300);
 	memset(serialConfig->data, 0, UART_SIZE);
 	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
 }
 /////////////////////////////////////////////////////////////////////////////////////
-void processReceivedSerialLora(Sniffer_t *sniffer){
+void processReceivedSerialLora(Sniffer_t *sniffer) {
 	UART_t *serialLora = sniffer->serial_lora;
 	uint8_t *dataReceived = serialLora->data;
 	uint8_t *len = &(serialLora->len);
 	LORA_t *loRa = sniffer->lora;
 	SX1276_HW_t *hw = loRa->rxhw;
 
-	if(*len < 2 ){
+	if (*len < 2) {
 		HAL_Delay(300);
-		if(*len<2){
+		if (*len < 2) {
 			memset(serialLora->data, 0, *len);
 			//serialLora->isReceivedDataReady = false;
 			return;
@@ -93,48 +84,46 @@ void processReceivedSerialLora(Sniffer_t *sniffer){
 
 	*len = packet_message(sniffer, dataReceived, *len, QUERY_UART1); //o set_uart_1 según corresponda
 
-	 // Send response via LoRa
+	// Send response via LoRa
 	loRa->txData = dataReceived;
 	loRa->txSize = *len;
 	startTransmition(loRa);
-	startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
+	startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
 	memset(loRa->rxData, 0, 300);
 	memset(serialLora->data, 0, UART_SIZE);
 	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
 }
 
-void processReceivedEthernet(Sniffer_t *sniffer){///////////////////////################////////////////////////////////////
+void processReceivedEthernet(Sniffer_t *sniffer) { ///////////////////////################////////////////////////////////////
 
-	uint8_t *dataReceived = sniffer-> eth_bufRX;
-	uint8_t *len = &(sniffer -> eth_lenRX);
+	uint8_t *dataReceived = sniffer->eth_bufRX;
+	uint8_t *len = &(sniffer->eth_lenRX);
 	LORA_t *loRa = sniffer->lora;
 	SX1276_HW_t *hw = loRa->rxhw;
 
-	if(*len < 2 ){
+	if (*len < 2) {
 		HAL_Delay(300);
-		if(*len<2){
-			memset(sniffer-> eth_bufRX, 0, *len);
-			//serialLora->isReceivedDataReady = false;
+		if (*len < 2) {
+			memset(sniffer->eth_bufRX, 0, *len);
 			return;
 		}
 	}
 
 	//añadir filtros aca
 
-	*len = packet_message(sniffer, dataReceived,*len, QUERY_ETH);
+	*len = packet_message(sniffer, dataReceived, *len, QUERY_ETH);
 
-	 // Send response via LoRa
-	loRa->txData = sniffer-> eth_bufRX;
+	// Send response via LoRa
+	loRa->txData = sniffer->eth_bufRX;
 	loRa->txSize = *len;
 	startTransmition(loRa);
-	startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
+	startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
 	memset(loRa->rxData, 0, 300);
 	sniffer->eth_lenRX = 0;
 	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
 }
 
-
-uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer){
+uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer) {
 	// Data validation
 	if (*len < MINIMUM_FRAME_LEN || dataReceived[START_INDEX] != RDSS_START_MARK
 			|| dataReceived[*len - 1] != RDSS_END_MARK
@@ -157,12 +146,11 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 	//uint8_t zero = 0x00;                                          //////////////REVISAR///////////////
 	//uint8_t base = readReg(hw, LR_RegFifoRxCurrentaddr);
 
-	//int timeStart = HAL_GetTick();
-	if (loRa->rxSize > 0 ) {
-		if(loRa->rxData == NULL){
+	if (loRa->rxSize > 0) {
+		if (loRa->rxData == NULL) {
 			return;
 		}
-		memset(loRa->rxData, 0, sizeof(uint8_t)*loRa->rxSize);
+		memset(loRa->rxData, 0, sizeof(uint8_t) * loRa->rxSize);
 		uint8_t addr = 0x00;
 		HAL_GPIO_WritePin(hw->nssPort, hw->nssPin, GPIO_PIN_RESET); // pull the pin low
 		HAL_Delay(1);
@@ -171,124 +159,79 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		HAL_Delay(1);
 		HAL_GPIO_WritePin(hw->nssPort, hw->nssPin, GPIO_PIN_SET); // pull the pin high
 	}
-
 	// Data validation
-	if (dataValidation(len, dataReceived, sniffer) == 0){
+	if (dataValidation(len, dataReceived, sniffer) == 0) {
 		memset(loRa->rxData, 0, 300);
 		*len = 0;
-		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
+		startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
 		return;
 	}
-
-
-
-	//uint8_t auxLen = *len;
 	*len = message_package(sniffer, dataReceived);
-
-
-
-	if(dataReceived[CMD_INDEX] == QUERY_UART1){
+	if (dataReceived[CMD_INDEX] == QUERY_UART1) {
 		//Retransmit  via serial
-		HAL_UART_Transmit(serialLora->handler, dataReceived+DATA_START_INDEX, *len, 100);
+		HAL_UART_Transmit(serialLora->handler, dataReceived + DATA_START_INDEX,
+				*len, 100);
 		memset(serialLora->data, 0, UART_SIZE);
 	}
-
-	if(dataReceived[CMD_INDEX] == QUERY_ETH){
-
+	if (dataReceived[CMD_INDEX] == QUERY_ETH) {
 		uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
 		uint8_t data_enviar[size];
-		for (uint8_t i = 0; i < size; i++){
-			data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
-		}
+		for (uint8_t i = 0; i < size; i++)
+			data_enviar[i] = (uint8_t) dataReceived[DATA_START_INDEX + i];
 
-		eth_transmit(socket_0_register, data_enviar, size);
-
-
-		/*
-		uint8_t *arreglo = (uint8_t *) malloc(1024* sizeof(uint8_t));
-		for (int i = 0; i < 1024; i++) {
-		  arreglo[i] = 0x23;
-		}
-
-		eth_transmit(socket_0_register, arreglo, 1024);
-		free(arreglo);
-        */
-
-
-
-	}
-
-	else{
-
-
+		//eth_transmit(socket_0_register, data_enviar, size);
+	} else {
 		// Send response via LoRa
 		uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
 		uint8_t data_enviar[size];
-		for (uint8_t i = 0; i < size; i++){
-			data_enviar[i] = (uint8_t)dataReceived[DATA_START_INDEX+i];
+		for (uint8_t i = 0; i < size; i++) {
+			data_enviar[i] = (uint8_t) dataReceived[DATA_START_INDEX + i];
 		}
 		loRa->txData = loRa->rxData;
-		loRa->txSize = sizeof(data_enviar)+9;
+		loRa->txSize = sizeof(data_enviar) + 9;
 		startTransmition(loRa);
-		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
-		/*
-		loRa->txData = dataReceived;
-		loRa->txSize = *len;
-		int timeEnd = HAL_GetTick();
-		int time = timeEnd - timeStart; //////////REVISAR//////////
-		startTransmition(loRa);
-		startRxContinuous(hw,RECEIVE_PAYLOAD_LENGTH);
-		*/
-	}
-	memset(loRa->rxData, 0, 300);
-	loRa->rxSize = 0;
+		startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
+		memset(loRa->rxData, 0, 300);
+		loRa->rxSize = 0;
 
+	}
 }
 
 void processReceived(Sniffer_t *sniffer) {
 	UART_t *serial = sniffer->serial_lora;
 	LORA_t *loRa = sniffer->lora;
-
 	if (serial->isReceivedDataReady) {
 		HAL_Delay(300);
-		if(dataValidation(&(serial->len), serial->data, sniffer) == 1){
+		if (dataValidation(&(serial->len), serial->data, sniffer) == 1)
 			processReceivedSerialConfig(sniffer);
-		}
-		else{
+		else
 			processReceivedSerialLora(sniffer);
-		}
 		serial->len = 0;
 		serial->isReceivedDataReady = false;
 		HAL_UART_AbortReceive_IT(sniffer->serial_lora->handler);
-		HAL_UART_Receive_IT(sniffer->serial_lora->handler, sniffer->serial_lora->data + sniffer->serial_lora->len, 1);
-		//HAL_UART_DeInit(&huart1);
-		//HAL_UART_Init(&huart1);
-	}
-
-	else if (sniffer -> eth_lenRX >0){
+		HAL_UART_Receive_IT(sniffer->serial_lora->handler,
+				sniffer->serial_lora->data + sniffer->serial_lora->len, 1);
+	} else if (sniffer->eth_lenRX > 0)
 		processReceivedEthernet(sniffer);
-	}
-
-	else if (loRa->rxSize > 0) {
+	else if (loRa->rxSize > 0)
 		processReceivedLoRa(sniffer);
-	}
 }
 
-uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs485_cmd_t cmd_rq) {
+uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen,
+		Rs485_cmd_t cmd_rq) {
 	uint8_t *responsePtr;
-	uint8_t zero [ ] = {0x00};
-	uint8_t sniffer_func [ ] = {SNIFFER};
-	uint8_t cmd [ ] = {cmd_rq} ; /////////////$$$$$$$$$$$$$$////////////
-	uint8_t start_mark [ ] = {0x7e};
-
+	uint8_t zero[] = { 0x00 };
+	uint8_t sniffer_func[] = { SNIFFER };
+	uint8_t cmd[] = { cmd_rq }; /////////////$$$$$$$$$$$$$$////////////
+	uint8_t start_mark[] = { 0x7e };
 
 	if (dataReceived == NULL)
 		return 0;
 
-	uint8_t temp [dataLen];
+	uint8_t temp[dataLen];
 	uint8_t i = 0;
-	while (i < dataLen){
-		temp[i] = dataReceived[START_INDEX+i];
+	while (i < dataLen) {
+		temp[i] = dataReceived[START_INDEX + i];
 		i++;
 	}
 
@@ -297,7 +240,7 @@ uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs
 	responsePtr += sizeof(start_mark);
 	memcpy(responsePtr, sniffer_func, sizeof(sniffer_func));
 	responsePtr += sizeof(sniffer_func);
-	memcpy(responsePtr,&( s->id), sizeof(s->id));
+	memcpy(responsePtr, &(s->id), sizeof(s->id));
 	responsePtr += sizeof(s->id);
 	memcpy(responsePtr, cmd, sizeof(cmd));
 	responsePtr += sizeof(cmd);
@@ -309,7 +252,7 @@ uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs
 	responsePtr = &dataReceived[DATA_START_INDEX];
 	//copiar mensaje que llego originalmente
 	i = 0;
-	while(i < dataLen){
+	while (i < dataLen) {
 		memcpy(responsePtr, &temp[i], sizeof(temp[i]));
 		responsePtr += sizeof(temp[i]);
 		i++;
@@ -318,7 +261,7 @@ uint8_t packet_message(Sniffer_t *s, uint8_t *dataReceived, uint16_t dataLen, Rs
 	memset(temp, 0, sizeof(temp));
 	uint8_t CRC_INDEX = DATA_START_INDEX + dataLen;
 	uint8_t END_INDEX = CRC_INDEX + CRC_SIZE;
-	memcpy(dataReceived+DATA_LENGHT1_INDEX, &dataLen, sizeof(dataLen));
+	memcpy(dataReceived + DATA_LENGHT1_INDEX, &dataLen, sizeof(dataLen));
 	responsePtr += sizeof(dataLen);
 	dataReceived[END_INDEX] = LTEL_END_MARK;
 	setCrc(dataReceived, DATA_START_INDEX + dataLen);
@@ -364,20 +307,22 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 		responsePtr = &dataReceived[DATA_START_INDEX];
 		responsePtr = dataReceived + DATA_START_INDEX;
 		/*swOut_x_20_mA,
-		swIn_x_20mA,
-		dIn1,
-		dIn2,
-		aOut1_10V,
-		aOut_x_20mA,
-		aIn1_10V,
-		aIn_x_20mA*/
-		dataLen = sizeof(s->aIn1_0_10V) +sizeof(s->aOut1_0_10V)+ sizeof(s->aIn2_x_20mA) + sizeof(s->aOut2_x_20mA)+ sizeof(s->swOut_x_20mA)
-				+sizeof(s->swIn_x_20mA)  + sizeof(s->dIn1)+sizeof(s->dIn2) + sizeof(s->swSerial);
+		 swIn_x_20mA,
+		 dIn1,
+		 dIn2,
+		 aOut1_10V,
+		 aOut_x_20mA,
+		 aIn1_10V,
+		 aIn_x_20mA*/
+		dataLen = sizeof(s->aIn1_0_10V) + sizeof(s->aOut1_0_10V)
+				+ sizeof(s->aIn2_x_20mA) + sizeof(s->aOut2_x_20mA)
+				+ sizeof(s->swOut_x_20mA) + sizeof(s->swIn_x_20mA)
+				+ sizeof(s->dIn1) + sizeof(s->dIn2) + sizeof(s->swSerial);
 
 		memcpy(responsePtr, &(s->aIn1_0_10V), sizeof(s->aIn1_0_10V));
 		responsePtr += sizeof(s->aIn1_0_10V);
 
-		memcpy(responsePtr, &(s->aOut1_0_10V),sizeof(s->aOut1_0_10V));
+		memcpy(responsePtr, &(s->aOut1_0_10V), sizeof(s->aOut1_0_10V));
 		responsePtr += sizeof(s->aOut1_0_10V);
 
 		memcpy(responsePtr, &(s->aIn2_x_20mA), sizeof(s->aIn2_x_20mA));
@@ -387,7 +332,7 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 		responsePtr += sizeof(s->aOut2_x_20mA);
 
 		memcpy(responsePtr, &(s->swIn_x_20mA), sizeof(s->swIn_x_20mA));
-				responsePtr += sizeof(s->swIn_x_20mA);
+		responsePtr += sizeof(s->swIn_x_20mA);
 
 		memcpy(responsePtr, &(s->swOut_x_20mA), sizeof(s->swOut_x_20mA));
 		responsePtr += sizeof(s->swOut_x_20mA);
@@ -423,32 +368,32 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 		loRa->dfreq = freqDecode(dataReceived + DATA_START_INDEX);
 		saveData(s, DOWNLINK);
 		setFreqReg(loRa->rxhw, loRa->dfreq);
-		startRxContinuous(loRa->rxhw,RECEIVE_PAYLOAD_LENGTH);
+		startRxContinuous(loRa->rxhw, RECEIVE_PAYLOAD_LENGTH);
 		break;
 	case SET_BANDWIDTH:
 		dataLen = sizeof(loRa->bw);
 		loRa->bw = dataReceived[DATA_START_INDEX] - 1;
 		saveData(s, BANDWITH);
 		writeLoRaParams(loRa);
-		startRxContinuous(loRa->rxhw,RECEIVE_PAYLOAD_LENGTH);
+		startRxContinuous(loRa->rxhw, RECEIVE_PAYLOAD_LENGTH);
 		break;
 	case SET_SPREAD_FACTOR:
 		dataLen = sizeof(loRa->sf);
 		loRa->sf = dataReceived[DATA_START_INDEX] + 6;
 		saveData(s, SPREAD_FACTOR);
 		writeLoRaParams(loRa);
-		startRxContinuous(loRa->rxhw,RECEIVE_PAYLOAD_LENGTH);
+		startRxContinuous(loRa->rxhw, RECEIVE_PAYLOAD_LENGTH);
 		break;
 	case SET_CODING_RATE:
 		dataLen = sizeof(loRa->cr);
 		loRa->cr = dataReceived[DATA_START_INDEX];
 		saveData(s, CODING_RATE);
 		writeLoRaParams(loRa);
-		startRxContinuous(loRa->rxhw,RECEIVE_PAYLOAD_LENGTH);
+		startRxContinuous(loRa->rxhw, RECEIVE_PAYLOAD_LENGTH);
 		break;
 	case SET_OUT:
-		dataLen = sizeof(s->aOut1_0_10V) + sizeof(s->aOut2_x_20mA) + sizeof(s->dOut)
-				+ sizeof(s->dOut2);
+		dataLen = sizeof(s->aOut1_0_10V) + sizeof(s->aOut2_x_20mA)
+				+ sizeof(s->dOut) + sizeof(s->dOut2);
 		s->aOut1_0_10V = dataReceived[DATA_START_INDEX + 0]
 				| (dataReceived[DATA_START_INDEX + 1] << 8);
 		s->aOut2_x_20mA = dataReceived[DATA_START_INDEX + 2]
@@ -458,10 +403,10 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 		s->dOut2 = dataReceived[DATA_START_INDEX + 5];
 
 		s->swSerial = dataReceived[DATA_START_INDEX + 6];
-	//	saveData(s, AOUT_0_10V);
-	//	saveData(s, AOUT_0_20mA);
-	//	saveData(s, AOUT_4_20mA);
-	//	saveData(s, DOUT);
+		//	saveData(s, AOUT_0_10V);
+		//	saveData(s, AOUT_0_20mA);
+		//	saveData(s, AOUT_4_20mA);
+		//	saveData(s, DOUT);
 		break;
 	case SET_AOUT_0_10V:
 		dataLen = sizeof(s->aOut1_0_10V);
@@ -487,8 +432,9 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 		saveData(s, DOUT);
 		break;
 	case QUERY_UART1:
-		dataLen =  (dataReceived[DATA_LENGHT1_INDEX] | dataReceived[DATA_LENGHT2_INDEX] << 8);
-		return(dataLen);
+		dataLen = (dataReceived[DATA_LENGHT1_INDEX]
+				| dataReceived[DATA_LENGHT2_INDEX] << 8);
+		return (dataLen);
 		break;
 	case SET_UART1:
 		//aca va algo del set
@@ -500,8 +446,8 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 
 	uint8_t CRC_INDEX = DATA_START_INDEX + dataLen;
 	uint8_t END_INDEX = CRC_INDEX + CRC_SIZE;
-	memcpy(dataReceived+DATA_LENGHT1_INDEX, &dataLen, sizeof(dataLen));
-					responsePtr += sizeof(dataLen);
+	memcpy(dataReceived + DATA_LENGHT1_INDEX, &dataLen, sizeof(dataLen));
+	responsePtr += sizeof(dataLen);
 	dataReceived[END_INDEX] = LTEL_END_MARK;
 	setCrc(dataReceived, DATA_START_INDEX + dataLen);
 
@@ -509,95 +455,97 @@ uint8_t message_package(Sniffer_t *s, uint8_t *dataReceived) {
 }
 
 uint8_t readEepromData(Sniffer_t *s, EEPROM_SECTOR_t sector) {
-    LORA_t *loRa = s->lora;
-    I2C_HandleTypeDef *i2c = s->i2c;
+	LORA_t *loRa = s->lora;
+	I2C_HandleTypeDef *i2c = s->i2c;
 
-    uint8_t result = 0; // Initialize result to 0 (success).
+	uint8_t result = 0; // Initialize result to 0 (success).
 
-    switch (sector) {
-        case SPREAD_FACTOR:
-            loRa->sf = readByte(i2c, K24C02_PAGE_ADDR(0), SF_OFFSET);
-            if (loRa->sf < SF_6 || loRa->sf > SF_12) {
-                loRa->sf = SF_10;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case BANDWITH:
-            loRa->bw = readByte(i2c, K24C02_PAGE_ADDR(0), BW_OFFSET);
-            if (loRa->bw < LORABW_7_8KHZ || loRa->bw > LORABW_500KHZ) {
-                loRa->bw = LORABW_62_5KHZ;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case CODING_RATE:
-            loRa->cr = readByte(i2c, K24C02_PAGE_ADDR(0), CR_OFFSET);
-            if (loRa->cr < LORA_CR_4_5 || loRa->cr > LORA_CR_4_8) {
-                loRa->cr = LORA_CR_4_6;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case FUNCTION:
-            s->function = readByte(i2c, K24C02_PAGE_ADDR(0), FUNCTION_OFFSET);
-            if (s->function == -1) {
-                s->function = VLADR;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case ID:
-            s->id = readByte(i2c, K24C02_PAGE_ADDR(0), ID_OFFSET);
-            if (s->id == -1) {
-                s->id = 0;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case DOWNLINK:
-            loRa->dfreq = read4Byte(i2c, K24C02_PAGE_ADDR(1), DL_OFFSET);
-            if (loRa->dfreq < DOWNLINK_FREQ_MIN || loRa->dfreq > DOWNLINK_FREQ_MAX) {
-                loRa->dfreq = DOWNLINK_FREQ;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case UPLINK:
-            loRa->ufreq = read4Byte(i2c, K24C02_PAGE_ADDR(1), UL_OFFSET);
-            if (loRa->ufreq < UPLINK_FREQ_MIN || loRa->ufreq > UPLINK_FREQ_MAX) {
-                loRa->ufreq = UPLINK_FREQ;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case AOUT_0_10V:
-            s->aOut1_0_10V = read2Byte(i2c, K24C02_PAGE_ADDR(2), AOUT_0_10V_OFFSET);
-            if (s->aOut1_0_10V == -1) {
-                s->aOut1_0_10V = 0;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case AOUT_0_20mA:
-            s->aOut2_x_20mA = read2Byte(i2c, K24C02_PAGE_ADDR(2), AOUT_0_20mA_OFFSET);
-            if (s->aOut2_x_20mA == -1) {
-                s->aOut2_x_20mA = 0;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case AOUT_4_20mA:
-            s->aOut2_x_20mA = read2Byte(i2c, K24C02_PAGE_ADDR(2), AOUT_4_20mA_OFFSET);
-            if (s->aOut2_x_20mA == -1) {
-                s->aOut2_x_20mA = 0;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        case DOUT:
-            s->dOut = readByte(i2c, K24C02_PAGE_ADDR(2), DOUT_OFFSET);
-            if (s->dOut == -1) {
-                s->dOut = GPIO_PIN_RESET;
-                result = 1; // Set result to 1 (error).
-            }
-            break;
-        default:
-            result = 2; // Set result to 2 (unsupported sector).
-            break;
-    }
+	switch (sector) {
+	case SPREAD_FACTOR:
+		loRa->sf = readByte(i2c, K24C02_PAGE_ADDR(0), SF_OFFSET);
+		if (loRa->sf < SF_6 || loRa->sf > SF_12) {
+			loRa->sf = SF_10;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case BANDWITH:
+		loRa->bw = readByte(i2c, K24C02_PAGE_ADDR(0), BW_OFFSET);
+		if (loRa->bw < LORABW_7_8KHZ || loRa->bw > LORABW_500KHZ) {
+			loRa->bw = LORABW_62_5KHZ;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case CODING_RATE:
+		loRa->cr = readByte(i2c, K24C02_PAGE_ADDR(0), CR_OFFSET);
+		if (loRa->cr < LORA_CR_4_5 || loRa->cr > LORA_CR_4_8) {
+			loRa->cr = LORA_CR_4_6;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case FUNCTION:
+		s->function = readByte(i2c, K24C02_PAGE_ADDR(0), FUNCTION_OFFSET);
+		if (s->function == -1) {
+			s->function = VLADR;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case ID:
+		s->id = readByte(i2c, K24C02_PAGE_ADDR(0), ID_OFFSET);
+		if (s->id == -1) {
+			s->id = 0;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case DOWNLINK:
+		loRa->dfreq = read4Byte(i2c, K24C02_PAGE_ADDR(1), DL_OFFSET);
+		if (loRa->dfreq < DOWNLINK_FREQ_MIN || loRa->dfreq > DOWNLINK_FREQ_MAX) {
+			loRa->dfreq = DOWNLINK_FREQ;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case UPLINK:
+		loRa->ufreq = read4Byte(i2c, K24C02_PAGE_ADDR(1), UL_OFFSET);
+		if (loRa->ufreq < UPLINK_FREQ_MIN || loRa->ufreq > UPLINK_FREQ_MAX) {
+			loRa->ufreq = UPLINK_FREQ;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case AOUT_0_10V:
+		s->aOut1_0_10V = read2Byte(i2c, K24C02_PAGE_ADDR(2), AOUT_0_10V_OFFSET);
+		if (s->aOut1_0_10V == -1) {
+			s->aOut1_0_10V = 0;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case AOUT_0_20mA:
+		s->aOut2_x_20mA = read2Byte(i2c, K24C02_PAGE_ADDR(2),
+		AOUT_0_20mA_OFFSET);
+		if (s->aOut2_x_20mA == -1) {
+			s->aOut2_x_20mA = 0;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case AOUT_4_20mA:
+		s->aOut2_x_20mA = read2Byte(i2c, K24C02_PAGE_ADDR(2),
+		AOUT_4_20mA_OFFSET);
+		if (s->aOut2_x_20mA == -1) {
+			s->aOut2_x_20mA = 0;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	case DOUT:
+		s->dOut = readByte(i2c, K24C02_PAGE_ADDR(2), DOUT_OFFSET);
+		if (s->dOut == -1) {
+			s->dOut = GPIO_PIN_RESET;
+			result = 1; // Set result to 1 (error).
+		}
+		break;
+	default:
+		result = 2; // Set result to 2 (unsupported sector).
+		break;
+	}
 
-    return (result);
+	return (result);
 }
 
 HAL_StatusTypeDef saveData(Sniffer_t *s, EEPROM_SECTOR_t sector) {

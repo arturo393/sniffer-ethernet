@@ -359,8 +359,8 @@ uint8_t startTransmition(LORA_t *loRa) {
 	SX1276_HW_t *hw = loRa->txhw;
 	if (loRa->txSize == 0)
 		return (0);
-
-	writeReg(hw, LR_RegPayloadLength, &(loRa->txSize), 1);
+	uint8_t cmd = (uint8_t) (loRa->txSize);
+	writeReg(hw, LR_RegPayloadLength, &(cmd), 1);
 	writeReg(hw, LR_RegFifoAddrPtr, &DEFAULT_TX_ADDR, 1);
 	//loRa->txSize = readReg(hw, LR_RegPayloadLength);
 	for (int i = 0; i < loRa->txSize; i++)
@@ -392,24 +392,26 @@ LORA_t* loRa_Init(SPI_HandleTypeDef *spi1,SPI_HandleTypeDef *spi2) {
 		l->rxhw = malloc(sizeof(SX1276_HW_t));
 		l->txhw = malloc(sizeof(SX1276_HW_t));
 
-		l->rxSize = 0;
 
-		l->rxhw->nssPin = SPI1_NSS_Pin;
-		l->rxhw->nssPort = SPI1_NSS_GPIO_Port;
-		l->rxhw->nrstPin = NRST_LORA_1_Pin;
-		l->rxhw->nrstPort = NRST_LORA_1_GPIO_Port;
-		l->rxhw->dio0Port = BUSSY_1_GPIO_Port;
-		l->rxhw->dio0Pin = BUSSY_1_Pin;
-		l->rxhw->spi = spi1;
+		l->txSize = 0;
+
+		l->txhw->spi = spi1;
+		l->txhw->nssPin = SPI1_NSS_Pin;
+		l->txhw->nssPort = SPI1_NSS_GPIO_Port;
+		l->txhw->nrstPin = NRST_LORA_1_Pin;
+		l->txhw->nrstPort = NRST_LORA_1_GPIO_Port;
+		l->txhw->dio0Port = BUSSY_1_GPIO_Port;
+		l->txhw->dio0Pin = BUSSY_1_Pin;
 
 
-		l->txhw->nssPin = SPI2_NSS_Pin;
-		l->txhw->nssPort = SPI2_NSS_GPIO_Port;
-		l->txhw->nrstPin = NRST_LORA_2_Pin;
-		l->txhw->nrstPort = NRST_LORA_2_GPIO_Port;
-		l->txhw->dio0Port = BUSSY_2_GPIO_Port;
-		l->txhw->dio0Pin = BUSSY_2_Pin;
-		l->txhw->spi = spi2;
+		l->rxhw->spi = spi2;
+		l->rxhw->nssPin = SPI2_NSS_Pin;
+		l->rxhw->nssPort = SPI2_NSS_GPIO_Port;
+		l->rxhw->nrstPin = NRST_LORA_2_Pin;
+		l->rxhw->nrstPort = NRST_LORA_2_GPIO_Port;
+		l->rxhw->dio0Port = BUSSY_2_GPIO_Port;
+		l->rxhw->dio0Pin = BUSSY_2_Pin;
+
 		HAL_GPIO_WritePin(l->rxhw->nssPort, l->rxhw->nssPin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(l->rxhw->nrstPort, l->rxhw->nrstPin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(l->txhw->nssPort, l->txhw->nssPin, GPIO_PIN_SET);
@@ -420,7 +422,7 @@ LORA_t* loRa_Init(SPI_HandleTypeDef *spi1,SPI_HandleTypeDef *spi2) {
 
 void initLoRaParameters(SX1278_t *module) {
 	module->power = SX1278_POWER_17DBM;
-	module->LoRa_CRC_sum = CRC_DISABLE;
+	module->LoRa_CRC_sum = CRC_ENABLE;
 	module->ocp = OVERCURRENTPROTECT;
 	module->lnaGain = LNAGAIN;
 	module->AgcAutoOn = 12; // for L-TEL PROTOCOL
@@ -428,9 +430,9 @@ void initLoRaParameters(SX1278_t *module) {
 	module->symbTimeoutLsb = RX_TIMEOUT_LSB;
 	module->preambleLengthMsb = PREAMBLE_LENGTH_MSB;
 	module->preambleLengthLsb = PREAMBLE_LENGTH_LSB;
-	module->preambleLengthLsb = 12; // for L-TEL PROTOCOL
+	module->preambleLengthLsb = 6; // for L-TEL PROTOCOL
 	module->fhssValue = HOPS_PERIOD; // for L-TEL PROTOCOL
-	module->len = 9;
+	module->len = 0;
 }
 
 void sx1278Reset(SX1278_t *loRa) {

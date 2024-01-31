@@ -211,7 +211,7 @@ int main(void)
 		adcValues[2] = lm75_read();
 		updateMasterStatus(rdss, adcValues, 5000);
 		processUartRx(&u1, rdss, server, loRa); // TODO: Para búsqueda
-		processUart2Rx(&u2, rdss, server, loRa);
+		//processUartRx(&u2, rdss, server, loRa);
 		configureLoRaRx(loRa, MASTER_RECEIVER);
 		masterProcessLoRaRx(loRa, rdss, vlad);
 

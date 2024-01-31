@@ -98,7 +98,7 @@ extern uint8_t *p;
 // Funciones de transmisión recepción vía SPI:
 void transmitir_spi(uint8_t* p, uint8_t len);
 void transmitir_recibir_spi(uint8_t* p_t, uint8_t len_t, uint8_t* p_r, uint16_t len_r);
-void eth_read_reg(uint8_t BSB_SELECT,uint8_t addr, uint8_t *buffer_r, uint16_t buffer_r_len);
+void eth_read_reg(uint8_t BSB_SELECT,uint16_t addr, uint8_t *buffer_r, uint16_t buffer_r_len);
 
 // Funciones para el ajuste de los registros del chip w5500:
 void common_register_block(uint8_t* buff, uint16_t address, uint8_t* data,uint8_t len);
