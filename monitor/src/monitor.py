@@ -31,7 +31,11 @@ USBPORTTX = "/dev/ttyS0"
 USBPORTRX = "/dev/ttyS1"
 USBPORTAUX = "/dev/ttyS3"
 
-logging.basicConfig(filename=cfg.LOGGING_FILE, level=logging.DEBUG)
+logging.basicConfig(
+    filename=cfg.LOGGING_FILE,
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s"  # Add timestamp to log format
+)   
 
 class VladModule:
     def __init__(self):
@@ -225,7 +229,6 @@ def insertDevicesDataIntoDB(rtData):
 
             except Exception as e:
                 logging.exception(e)
-
 
 def openSerialPort(port=""):
     global serTx, serRx
@@ -538,8 +541,6 @@ def getSnifferStatus(serTx, serRx, id):
 def arduino_map(value, in_min, in_max, out_min, out_max):
     return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-
-
 def decodeMaster(buffer):
     bufferIndex = 0
     master = MasterModule()
@@ -716,7 +717,7 @@ def showBanner(provisionedDevicesArr, timeNow):
 
 
 
-def sendModbus(uartCmd, snifferAddress, data, serTx, serRx):
+def sendModbus(uartCmd, snifferAddress, data_to_send, serTx, serRx):
     """
     Sends variable length segment.
     Args:
@@ -727,64 +728,73 @@ def sendModbus(uartCmd, snifferAddress, data, serTx, serRx):
     Returns true if answer segment from sniffer is valid.
     """
     SNIFFER = "0A"
-    SEGMENT_START = '7E'
-    SEGMENT_END = '7F'
+    SEGMENT_START = 0x7e
+    SEGMENT_END = 0x7f
     ID_INDEX = 2
     COMMAND_INDEX = 3
     SERIAL_RESPONSE_CMD = 204 #CC
     DATA_START_INDEX = 6
 
 
-    intLen = int(len(data)/2)
+    intLen = int(len(data_to_send)/2)
     dataLen = format(intLen, '04x')
     formatLen = dataLen[2:] + dataLen[0:2]
-    cmdString = f"{SNIFFER}{snifferAddress}{uartCmd}{formatLen}{data}"
+    cmdString = f"{SNIFFER}{snifferAddress}{uartCmd}{formatLen}{data_to_send}"
     checksum = getChecksum(cmdString)
-    command = SEGMENT_START + cmdString + checksum + SEGMENT_END
-    cmdLen = int(len(command)/2)
-    logging.debug("SENT: " + command)
+    packet_data_to_send = f"{SEGMENT_START:02X}{cmdString}{checksum}{SEGMENT_END:02X}"
+    cmdLen = int(len(packet_data_to_send)/2)
+    #logging.debug("SENT: " + command)
 
-    cmd_bytes = bytearray.fromhex(command)
+    cmd_bytes = bytearray.fromhex(packet_data_to_send)
     hex_byte = ''
-
     startTime = time.time()
-
+    logging.debug(f"Data to send: 0x{dataLen} - Packet data to send length: 0x{len(cmd_bytes):02X}")
     try:
         for cmd_byte in cmd_bytes:
             hex_byte = ('{0:02x}'.format(cmd_byte))
             serTx.write(bytes.fromhex(hex_byte))
 
-        hexResponse = serRx.read(cmdLen)
+        packet_received = serRx.read(cmdLen)
+        message = f"Packet data received lengt: 0x{len(packet_received):02X}"
+        if(len(packet_received) == 0):
+            logging.debug(message)
+        else:
+            logging.debug(message)
         
-        logging.debug("GET: "+hexResponse.hex('-'))
+        #logging.debug("GET: "+hexResponse.hex('-'))
 
         responseTime = str(time.time() - startTime)
 
         logging.debug("Response time: " + responseTime)
 
         # ---- Validations
-        responseLen = len(hexResponse)
+        responseLen = len(packet_received)
 
-        if(hexResponse == None or hexResponse == "" or hexResponse == " " or hexResponse == b'' or responseLen == 0):
-            logging.debug("Modbus reception failed: Response empty")
+        if(packet_received == None or packet_received == "" or packet_received == " " or packet_received == b'' or responseLen == 0):
+            logging.error("Modbus reception failed: Response empty")
             return False
-        if(hexResponse[0] != int(SEGMENT_START, 16) or hexResponse[responseLen - 1] != int(SEGMENT_END)):
-            logging.debug("Modbus reception failed: Incorrect start or end byte")
+        if (packet_received[0] != SEGMENT_START) or (packet_received[responseLen - 1] != SEGMENT_END):
+            logging.error("Modbus reception failed: Incorrect start or end byte")
             return False
-        if(hexResponse[ID_INDEX] != int(snifferAddress,16)):
-            logging.debug("Modbus reception failed: Incorrect ID: " + str(hexResponse[ID_INDEX]))
+        if(packet_received[ID_INDEX] != int(snifferAddress,16)):
+            logging.error("Modbus reception failed: Incorrect ID: " + str(packet_received[ID_INDEX]))
             return False
-        if(hexResponse[COMMAND_INDEX] != int(uartCmd,16)):
-            logging.debug("Modbus reception failed: Incorrect command: " + str(hexResponse[COMMAND_INDEX]))
+        if(packet_received[COMMAND_INDEX] != int(uartCmd,16)):
+            logging.error("Modbus reception failed: Incorrect command: " + str(packet_received[COMMAND_INDEX]))
             return False
         
         # ----Extract data
         # Los datos recibidos no tienen formato conocido, solo se quitan los bytes de formato/validacion que agrega el sniffer
-        dataReceived = []
 
+
+        dataReceived = []
         for i in range(0, responseLen):
             if(DATA_START_INDEX <= i < DATA_START_INDEX + intLen):
-                dataReceived.append(hexResponse[i])
+                dataReceived.append(packet_received[i])
+                
+
+                
+        logging.debug(f"Data received lengt: 0x{len(dataReceived):02X}")
 
         serTx.flushInput()
         serTx.flushOutput()
