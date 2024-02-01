@@ -280,7 +280,7 @@ int main(void) {
 	MX_TIM1_Init();
 	MX_USART3_UART_Init();
 	/* USER CODE BEGIN 2 */
-	HAL_StatusTypeDef res;
+
 
 	s = sniffer(&hi2c3, adcMA);
 	s->serial_lora = uart(&huart1);
@@ -329,7 +329,7 @@ int main(void) {
 
 	//-----------------------------------------------------------
 
-	//configuración as//
+	//configuración fisicas del chip//
 	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
 			(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
 	HAL_Delay(500);
@@ -346,7 +346,7 @@ int main(void) {
 
 	HAL_UART_Receive_IT(s->serial_lora->handler, s->serial_lora->data, 1);
 
-	// QUE HACE ?
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -355,11 +355,6 @@ int main(void) {
 
 		readWhenDataArrive(s->lora);
 		processReceived(s);
-
-		if(s->eth_bufRX != NULL){
-			free(s->eth_bufRX);
-			s->eth_bufRX = NULL;
-		}
 
 		// LEER REGISTRO IR
 		eth_read_reg(socket_0_register,  S_IR_OFFSET, &s_IR, sizeof(s_IR));

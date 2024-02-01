@@ -97,7 +97,6 @@ void writeReg(SX1276_HW_t *hw, uint8_t address, const uint8_t *cmd,
 	HAL_GPIO_WritePin(hw->nssPort, hw->nssPin, GPIO_PIN_SET); // pull the pin high
 	if (res != HAL_OK)
 		Error_Handler();
-	//HAL_Delay(10);
 }
 
 void setRFFrequencyReg(SX1278_t *module) {
@@ -362,6 +361,11 @@ uint8_t startTransmition(LORA_t *loRa) {
 	uint8_t cmd = (uint8_t) (loRa->txSize);
 	writeReg(hw, LR_RegPayloadLength, &(cmd), 1);
 	writeReg(hw, LR_RegFifoAddrPtr, &DEFAULT_TX_ADDR, 1);
+
+
+	//uint8_t regPayloadLength = 	readReg(hw, LR_RegPayloadLength);
+	//uint8_t regFifoAddrPtr = readReg(hw, LR_RegFifoAddrPtr);
+
 	//loRa->txSize = readReg(hw, LR_RegPayloadLength);
 	for (int i = 0; i < loRa->txSize; i++)
 		writeReg(hw, LR_RegFifo, loRa->txData + i, 1);
@@ -373,7 +377,7 @@ uint8_t startTransmition(LORA_t *loRa) {
 	uint8_t irqFlags = 0;
 	while (1) {
 		irqFlags = readReg(hw, LR_RegIrqFlags);
-		if (HAL_GPIO_ReadPin(hw->dio0Port, hw->dio0Pin) || (irqFlags & 0x08)) {
+		if (irqFlags & TX_DONE_MASK) {
 			int timeEnd = HAL_GetTick();
 			uint8_t cmd = 0xFF;//agregado
 			writeReg(hw, LR_RegIrqFlags, &cmd, 1);//agregado

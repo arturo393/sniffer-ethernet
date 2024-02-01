@@ -222,17 +222,16 @@ void update_socket_n_rx_buffer_addr(uint8_t sn_reg, uint16_t offset_address) {
 
 uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_rcv) {
 	uint16_t len_rx;
+	uint16_t s_RX_RD_addr;
+	uint16_t s_RX_RD_addr_updated;
 	len_rx = read_socket_n_rx_buffer_len(sn_reg);
-	uint8_t S_RX_WR0[2];
 
 	if (len_rx <= 0)
-		return (0);
-	data_rcv = malloc(sizeof(uint8_t) * len_rx);
-	if (data_rcv == NULL)
-		return (0);
-	s_RX_RD_addr = read_socket_n_rx_buffer_read_addr(sn_reg);
+		return (0);	s_RX_RD_addr = read_socket_n_rx_buffer_read_addr(sn_reg);
 	eth_read_reg(sn_reg + S_N_RX_OFFSET, s_RX_RD_addr, data_rcv, len_rx);
+
 	s_RX_RD_addr_updated = s_RX_RD_addr + len_rx;
 	update_socket_n_rx_buffer_addr(sn_reg, s_RX_RD_addr_updated);
+
 	return len_rx;
 }

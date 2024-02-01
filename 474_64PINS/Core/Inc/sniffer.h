@@ -75,7 +75,7 @@ typedef struct {
 	UART_t *serial_lora;
 	UART_t *serial_config;
 	LORA_t *lora;
-	uint8_t *eth_bufRX;
+	uint8_t eth_bufRX[1024];
 	uint8_t eth_lenRX;
 } Sniffer_t;
 

@@ -22,7 +22,8 @@ Sniffer_t* sniffer(I2C_HandleTypeDef *i2c, uint16_t *adcBuffer) {
 		s->id = readEepromData(s, ID);
 		s->function = readEepromData(s, FUNCTION);
 		s->eth_lenRX = 0;
-		s->eth_bufRX = NULL;
+
+
 	}
 	return (s);
 }
@@ -95,33 +96,28 @@ void processReceivedSerialLora(Sniffer_t *sniffer) {
 }
 
 void processReceivedEthernet(Sniffer_t *sniffer) { ///////////////////////################////////////////////////////////////
+	LORA_t *lora = sniffer->lora;
+	SX1276_HW_t *hw = lora->rxhw;
 
-	uint8_t *dataReceived = sniffer->eth_bufRX;
-	uint8_t *len = &(sniffer->eth_lenRX);
-	LORA_t *loRa = sniffer->lora;
-	SX1276_HW_t *hw = loRa->rxhw;
+	lora->txSize = packet_message(sniffer, sniffer->eth_bufRX,(uint16_t) sniffer->eth_lenRX, QUERY_ETH);
 
-	if (*len < 2) {
-		HAL_Delay(300);
-		if (*len < 2) {
-			memset(sniffer->eth_bufRX, 0, *len);
-			return;
-		}
-	}
+	lora->txData = sniffer->eth_bufRX;
+	startTransmition(lora);
+	//startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
 
-	//añadir filtros aca
+	memset(lora->rxData, 0, 300);
+	lora->rxSize = 0;
 
-	*len = packet_message(sniffer, dataReceived, *len, QUERY_ETH);
 
-	// Send response via LoRa
-	loRa->txData = sniffer->eth_bufRX;
-	loRa->txSize = *len;
-	startTransmition(loRa);
-	startRxContinuous(hw, RECEIVE_PAYLOAD_LENGTH);
-	memset(loRa->rxData, 0, 300);
+	memset(sniffer->eth_bufRX,0,sizeof(sniffer->eth_bufRX));
 	sniffer->eth_lenRX = 0;
-	loRa->rxSize = readReg(hw, LR_RegRxNbBytes);
+
+	lora->txData = NULL;
+
 }
+
+
+
 
 uint8_t dataValidation(uint8_t *len, uint8_t *dataReceived, Sniffer_t *sniffer) {
 	// Data validation
@@ -179,7 +175,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 		for (uint8_t i = 0; i < size; i++)
 			data_enviar[i] = (uint8_t) dataReceived[DATA_START_INDEX + i];
 
-		//eth_transmit(socket_0_register, data_enviar, size);
+		eth_transmit(socket_0_register, data_enviar, size);
 	} else {
 		// Send response via LoRa
 		uint8_t size = dataReceived[DATA_LENGHT1_INDEX];

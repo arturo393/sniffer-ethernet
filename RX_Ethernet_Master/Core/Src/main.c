@@ -1087,11 +1087,14 @@ void masterProcessRdss(RDSS_t *rdss) {
 		break;
 
 	case QUERY_ETH:
+		for (uint8_t i = 0; i < loRa->rxSize; i++)
+			writeTxReg(loRa->rxData[i]);
+		break;
+		/*
 		for (uint8_t i = 0; i < (loRa->rxData[DATA_LENGHT1_INDEX]); i++)
 			writeTxReg_uart2(loRa->rxData[DATA_START_INDEX + i]);
-
 		break;
-
+        */
 	default:
 		for (uint8_t i = 0; i < sizeof(error); i++)
 			writeTxReg(error[i]);

@@ -314,7 +314,7 @@ void getRxFifoData(SX1278_t *loRa) {
 	if (loRa->rxSize > 0) {
 		HAL_GPIO_WritePin(GPIOB, LORA_NSS_Pin, GPIO_PIN_RESET); // pull the pin low
 		HAL_SPI_Transmit(loRa->spi, &addr, 1, timeout); // send address
-		HAL_SPI_Receive(loRa->spi, loRa->rxData, 256, timeout); // receive 6 bytes data
+		HAL_SPI_Receive(loRa->spi, loRa->rxData, 255, timeout); // receive 6 bytes data
 		HAL_GPIO_WritePin(GPIOB, LORA_NSS_Pin, GPIO_PIN_SET); // pull the pin high
 		loRa->status = RX_DONE;
 	}
