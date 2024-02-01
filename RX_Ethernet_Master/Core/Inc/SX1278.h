@@ -205,6 +205,10 @@
 #define CAD_DONE_MASK              (0x1 << 2)
 #define FHSS_CHANGE_CHANNEL_MASK   (0x1 << 1)
 #define CAD_DETECTED_MASK          (0x1 << 0)
+
+
+#define DEFAULT_RX_ADDR 0x00
+#define DEFAULT_TX_ADDR 0x80
 typedef enum SPREAD_FACTOR {
 	SF_6 = 6, SF_7, SF_8, SF_9, SF_10, SF_11, SF_12
 } SPREAD_FACTOR_t;
@@ -280,6 +284,9 @@ typedef enum LoRa_Mode {
 #define MASK_ENABLE 0
 #define MASK_DISABLE 1
 
+#define RX_BUFFER_LENGTH 300
+#define LORA_FIFO_LENGTH 255
+
 typedef struct {
 	uint32_t frequency;
 	uint32_t dlFreq;
@@ -308,7 +315,7 @@ typedef struct {
 	OPERATING_MODE_t operatingMode;
 	Lora_Mode_t mode;
 	SX1278_Status_t status;
-	uint8_t rxData[300];
+	uint8_t rxData[RX_BUFFER_LENGTH];
 	uint8_t rxSize;
 	uint8_t *txData;
 	uint8_t txSize;
@@ -338,7 +345,7 @@ void changeMode(SX1278_t *module, Lora_Mode_t mode);
 void initLoRaParameters(SX1278_t *module);
 uint8_t waitForRxDone(SX1278_t *loRa);
 void waitForTxEnd(SX1278_t *loRa);
-void getRxFifoData(SX1278_t *module);
+uint8_t read_rx_fifo(SX1278_t *module);
 int crcErrorActivation(SX1278_t *module);
 void setRxFifoAddr(SX1278_t *module);
 uint8_t setTxFifoAddr(SX1278_t *module);
@@ -351,4 +358,6 @@ void HAL_readLoRaSettings(SX1278_t* loRa);
 SX1278_t* loRaInit(SPI_HandleTypeDef *hspi1 ,Lora_Mode_t loRaMode
 );
 void configureLoRaRx(SX1278_t *loRa, Lora_Mode_t mode);
+void clear_irq_flags_and_reset_rx_data(SX1278_t *loRa);
+uint8_t is_data_received(SPI_HandleTypeDef *spi);
 #endif

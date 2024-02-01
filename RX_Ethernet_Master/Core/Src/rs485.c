@@ -43,10 +43,10 @@ RDSS_status_t checkModuleValidity(uint8_t *frame, uint8_t lenght) {
 	if (frame[1] >= SERVER || frame[1] <= SNIFFER) {
 		for (int i = 3; i < lenght; i++)
 			if (frame[i] == RDSS_END_MARK)
-				return VALID_MODULE;
+				return (VALID_MODULE);
 	} else
-		return WRONG_MODULE_FUNCTION;
-	return WRONG_MODULE_FUNCTION;
+		return (WRONG_MODULE_FUNCTION);
+	return (WRONG_MODULE_FUNCTION);
 }
 
 RDSS_status_t checkFrameValidity(uint8_t *frame, uint8_t lenght) {
@@ -54,14 +54,14 @@ RDSS_status_t checkFrameValidity(uint8_t *frame, uint8_t lenght) {
 	if (lenght > (MINIMUN_FRAME_LEN)) {
 		if (frame[0] == RDSS_START_MARK) {
 			if (frame[lenght - 1] == RDSS_END_MARK)
-				return VALID_FRAME;
+				return (VALID_FRAME);
 			else
-				return START_READING;
+				return (START_READING);
 		} else
-			return NOT_VALID_FRAME;
+			return (NOT_VALID_FRAME);
 	} else
 
-		return WAITING;
+		return (WAITING);
 }
 
 RDSS_status_t checkCRCValidity(uint8_t *frame, uint8_t len) {
