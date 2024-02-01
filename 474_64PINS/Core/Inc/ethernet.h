@@ -98,7 +98,7 @@ extern uint8_t *p;
 // Funciones de transmisión recepción vía SPI:
 void transmitir_spi(uint8_t* p, uint8_t len);
 void transmitir_recibir_spi(uint8_t* p_t, uint8_t len_t, uint8_t* p_r, uint16_t len_r);
-void eth_read_reg(uint8_t BSB_SELECT,uint8_t addr, uint8_t *buffer_r, uint16_t buffer_r_len);
+void eth_read_reg(uint8_t BSB_SELECT,uint16_t addr, uint8_t *buffer_r, uint16_t buffer_r_len);
 
 // Funciones para el ajuste de los registros del chip w5500:
 void common_register_block(uint8_t* buff, uint16_t address, uint8_t* data,uint8_t len);
@@ -112,5 +112,10 @@ void socket_reg_config(uint8_t buffer[243], uint8_t S_MR, uint8_t S_PORT[2],
 //Transmitir por ethernet
 void eth_transmit(uint8_t socket_n_register, uint8_t *data_transmitir, uint16_t data_len);
 void socket_cmd_cfg(uint8_t sn_reg, uint8_t cmd);
+uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception);
+uint8_t update_socket_n_rx_buffer_read_addr(uint8_t sn_reg);
+uint16_t read_socket_n_rx_buffer_len(uint8_t sn_reg);
+uint16_t read_socket_n_rx_buffer_read_addr(uint8_t sn_reg);
+void update_socket_n_rx_buffer_addr(uint8_t sn_reg, uint16_t offset_address);
 uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_reception);
 #endif /* INC_ETHERNET_H_ */
