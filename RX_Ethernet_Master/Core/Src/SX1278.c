@@ -103,7 +103,7 @@ void setOutputPower(SX1278_t *module) {
 }
 
 void setLORAWAN(SX1278_t *module) {
-	writeRegister(module->spi, RegSyncWord, &(module->syncWord), 1);
+	writeRegister(module->spi, LR_RegSyncWord, &(module->syncWord), 1);
 }
 
 void setOvercurrentProtect(SX1278_t *module) {
@@ -168,7 +168,7 @@ void writeLoRaParametersReg(SX1278_t *module) {
 	setLoRaLowFreqModeReg(module, SLEEP);
 	HAL_Delay(15);
 	setRFFrequencyReg(module);
-	writeRegister(module->spi, RegSyncWord, &(module->syncWord), 1);
+	writeRegister(module->spi, LR_RegSyncWord, &(module->syncWord), 1);
 	setOutputPower(module);
 	setOvercurrentProtect(module);
 	writeRegister(module->spi, LR_RegLna, &(module->lnaGain), 1);

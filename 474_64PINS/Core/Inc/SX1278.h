@@ -17,16 +17,22 @@
 
 #define SPI_TIMEOUT 1000
 
+#define FSK_RX_BUFFER_SIZE 1024
+
+
+
+
 #define FXOSC 32000000
 #define DOWNLINK_FREQ_MAX 157000000UL
 #define DOWNLINK_FREQ_MIN 148000000
-#define DOWNLINK_FREQ 	  153000000
+#define DOWNLINK_FREQ 	  160000000
 #define UPLINK_FREQ_MAX   174000000
 #define UPLINK_FREQ_MIN   164000000
 #define UPLINK_FREQ       172000000
 #define SX1278_MAX_PACKET	100
 #define SX1278_DEFAULT_TIMEOUT		3000
 #define LORA_SEND_TIMEOUT 10000 //2000
+#define FSK_SEND_TIMEOUT 10000
 #define SX1278_POWER_20DBM  0xFF //20dbm
 #define SX1278_POWER_17DBM  0xFC //17dbm
 #define SX1278_POWER_14DBM  0xF9 //14dbm
@@ -82,6 +88,7 @@
 #define LR_RegModemConfig3                          0x26
 #define LR_RegDetectOptimize						0x31
 #define LR_RegDetectionThreshold					0x37
+#define  LR_RegSyncWord			                    0x39
 // I/O settings
 #define LR_RegDioMapping1                          0x40
 #define LR_RegDioMapping2                          0x41
@@ -120,8 +127,8 @@
 #define DIRECCION_0X86                              0x86
 #define DIRECCION_0X87                              0x87
 
-/********************FSK/ook mode***************************/
-#define  RegFIFO                0x00
+/////////////////FSK MODE////////////////////////
+#define  RegFIFO                0x00  ///////////////////////////////////////////////////////////////////////////////////////
 #define  RegOpMode              0x01
 #define  RegBitRateMsb      	0x02
 #define  RegBitRateLsb      	0x03
@@ -171,12 +178,11 @@
 #define  RegPayloadLength       0x32
 #define  RegNodeAdrs            0x33
 #define  RegBroadcastAdrs       0x34
-#define  RegFifoThresh      	0x35
+#define  RegFifoThresh      	0x35//////////////////////////////////////////////////////////////////////////////
 #define  RegSeqConfig1      	0x36
 #define  RegSeqConfig2      	0x37
 #define  RegTimerResol      	0x38
 #define  RegTimer1Coef      	0x39
-#define  RegSyncWord			0x39
 #define  RegTimer2Coef      	0x3a
 #define  RegImageCal            0x3b
 #define  RegTemp                0x3c
@@ -189,6 +195,9 @@
 #define  RegPllHop				0x44
 #define  RegPaDac				0x4d
 #define  RegBitRateFrac			0x5d
+
+
+
 
 /**********************************************************
  **Parameter table define
@@ -203,27 +212,45 @@
 #define FHSS_CHANGE_CHANNEL_MASK   (0x1 << 1)
 #define CAD_DETECTED_MASK          (0x1 << 0)
 
+// IRQ FLAGS 2
+#define PacketSent                 (0x1 << 3)
+#define FifoEmpty_IRQ              (0x1 << 6)
+
+#define RX_FSK_DONE                 (0x1 << 6)
+
+#define PREAMBLEDETECT              (0X1 << 1)
+#define START_CONDITION_BIT         (0x1 << 7)
+#define PACKET_FORMAT (0<<7)
+#define DC_FREE (0<<5)
+#define CRC_ON (0<<4)
+#define CRC_AUTO_CLEAR_OFF (0<<3)
+#define ADDRESS_FILTERING (0<<1)
+#define CRC_WHITHENING_TYPE (0<<1)
+
+
 #define LORA_RX_BUFFER_SIZE 30
 typedef enum SPREAD_FACTOR {
 	SF_6 = 6, SF_7, SF_8, SF_9, SF_10, SF_11, SF_12
 } SPREAD_FACTOR_t;
 
 typedef enum LORABW {
-	LORABW_7_8KHZ,
-	LORABW_10_4KHZ,
-	LORABW_15_6KHZ,
-	LORABW_20_8KHZ,
-	LORABW_31_2KHZ,
-	LORABW_41_7KHZ,
-	LORABW_62_5KHZ,
-	LORABW_125KHZ,
-	LORABW_250KHZ,
-	LORABW_500KHZ
-} LORABW_t;
+	BW_7_8KHZ,
+	BW_10_4KHZ,
+	BW_15_6KHZ,
+	BW_20_8KHZ,
+	BW_31_2KHZ,
+	BW_41_7KHZ,
+	BW_62_5KHZ,
+	BW_125KHZ,
+	BW_250KHZ,
+	BW_500KHZ
+} BW_t;
+
 
 typedef enum CODING_RATE {
-	LORA_CR_4_5 = 1, LORA_CR_4_6, LORA_CR_4_7, LORA_CR_4_8
+	CR_4_5 = 1, CR_4_6, CR_4_7, CR_4_8
 } CODING_RATE_t;
+
 
 typedef enum HEADER_MODE {
 	EXPLICIT, IMPLICIT
@@ -234,10 +261,12 @@ typedef enum CRC_SUM {
 } CRC_SUM_t;
 
 typedef enum OPERATING_MODE {
-	SLEEP, STANDBY, FSTX, //Frequency synthesis TX
+	SLEEP,
+	STANDBY,
+	FSTX, //Frequency synthesis TX
 	TX,
 	FSRX, //Frequency synthesis RX
-	RX_CONTINUOUS,
+	RX,
 	RX_SINGLE,
 	CAD //Channel activity detection
 } OPERATING_MODE_t;
@@ -254,13 +283,27 @@ typedef enum SX1278_STATUS {
 	TX_BUFFER_READY
 } SX1278_Status_t;
 
-typedef enum LoRa_Mode {
+typedef enum spi_Mode{
 	SLAVE_SENDER, SLAVE_RECEIVER, MASTER_SENDER, MASTER_RECEIVER
-} Lora_Mode_t;
+} spi_mode_t;
 
-#define LORA_MODE_ACTIVATION (0x00 | 8 << 4)
+
+#define FSK_OOK_MODE (0x00 | 0 << 7)
+#define MODULATIONFSK (0x00 |0 << 5)
+#define LOW_FREQUENCY_MODE (0x00 |1 << 3)
+#define IRQ1_MODEREADY (0x00|1<<7)
+
+
+
+
+
+#define SYNC_ON (0x00 | 1<<3)
+
+
+
+#define LORA_MODE_ACTIVATION (0x00 | 1 << 7)
 #define HIGH_FREQUENCY_MODE (0x00 | 0 << 3)
-#define LOW_FREQUENCY_MODE (0x00 | 1 << 3)
+
 
 #define DIO0_RX_DONE (0x00 | 0 << 6)
 #define DIO0_TX_DONE (0x00 | 1 << 6)
@@ -284,11 +327,17 @@ typedef struct {
 	uint32_t ulFreq;
 	uint8_t power;
 	SPREAD_FACTOR_t sf;
-	LORABW_t bw;
+	BW_t bw;
 	CODING_RATE_t cr;
-	CRC_SUM_t LoRa_CRC_sum;
+	CRC_SUM_t CRC_sum;
 	uint8_t len;
+	uint8_t CrcON;
+	uint8_t packet_format;
+	uint8_t DataMode;
+	uint8_t payloadLengthMSb;
+	uint8_t payloadLengthLSb;
 	uint8_t syncWord;
+
 	uint8_t ocp;
 	uint8_t lnaGain;
 	uint8_t AgcAutoOn;
@@ -304,7 +353,8 @@ typedef struct {
 	uint32_t lastTxTime;
 	uint32_t lastRxTime;
 	OPERATING_MODE_t operatingMode;
-	Lora_Mode_t mode;
+	spi_mode_t spi_mode;
+
 	SX1278_Status_t status;
 	uint8_t *rxData;
 	uint8_t rxSize;
@@ -322,6 +372,7 @@ typedef struct {
 } SX1278_t;
 
 typedef struct {
+	uint32_t freq;
 	SPI_HandleTypeDef *spi;
 	GPIO_TypeDef *nssPort;
 	uint16_t nssPin;
@@ -329,20 +380,26 @@ typedef struct {
 	uint16_t nrstPin;
 	GPIO_TypeDef *dio0Port;
 	uint16_t dio0Pin;
+	GPIO_TypeDef *dio2Port;
+	uint16_t dio2Pin; //pin 10 input data stream to be transmitted FSK
+	GPIO_TypeDef *dio1Port;
+	uint16_t dio1Pin; //pin 9 DCLK  FSK
+
 } SX1276_HW_t;
+
+
 
 typedef struct {
 	uint32_t ufreq;
 	uint32_t dfreq;
 	SPREAD_FACTOR_t sf;
-	LORABW_t bw;
+	BW_t bw;
 	CODING_RATE_t cr;
 	OPERATING_MODE_t mode;
 	uint32_t lastTxTime;
 	uint32_t lastRxTim;
-	//uint8_t rxData[LORA_RX_BUFFER_SIZE];
-	uint32_t writeTime;//agregado
-	uint8_t rxData[300];//agregado
+	uint32_t writeTime;
+	uint8_t rxData[300];
 	uint8_t rxSize;
 	uint8_t *txData;
 	uint16_t txSize;
@@ -350,6 +407,27 @@ typedef struct {
 	SX1276_HW_t *rxhw;
 	I2C_HandleTypeDef *i2c;
 } LORA_t;
+
+///////////////// FSK /////////////
+
+typedef struct {
+	uint32_t ufreq;
+	uint32_t dfreq;
+	OPERATING_MODE_t mode;
+	uint32_t lastTxTime;
+	uint32_t lastRxTim;
+	uint32_t writeTime;
+	uint8_t rxData[FSK_RX_BUFFER_SIZE];
+	uint8_t rxSize;
+	uint8_t *txData;
+	uint16_t txSize;
+	SX1276_HW_t *txhw;
+	SX1276_HW_t *rxhw;
+	I2C_HandleTypeDef *i2c;
+} FSK_t;
+
+////////////////////////////////////
+
 
 typedef struct {
 	uint8_t reg;
@@ -379,18 +457,17 @@ extern const uint8_t DEFAULT_TX_ADDR;
 
 // Configure the registers and their values
 extern const RegisterConfig_t config[];
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint8_t readRegister(SX1278_t *loRa, uint8_t address);
-void writeRegister(SX1278_t *loRa, uint8_t address, uint8_t *cmd,
-		uint8_t lenght);
+void writeRegister(SX1278_t *loRa, uint8_t address, uint8_t *cmd,uint8_t lenght);
 void setRFFrequencyReg(SX1278_t *module);
 void setOutputPower(SX1278_t *module);
 void setLORAWAN(SX1278_t *module);
 void setOvercurrentProtect(SX1278_t *module);
 void setLNAGain(SX1278_t *module);
 void setPreambleParameters(SX1278_t *module);
+
 void setRegModemConfig(SX1278_t *module);
+
 void setDetectionParametersReg(SX1278_t *module);
 void standbyMode(SX1278_t *module);
 void sleepMode(SX1278_t *module);
@@ -399,8 +476,8 @@ void setLoraLowFreqMode(SX1278_t *module);
 void clearIrqFlagsReg(SX1278_t *module);
 void readOperatingMode(SX1278_t *module);
 void setLoRaLowFreqModeReg(SX1278_t *module, OPERATING_MODE_t mode);
-void writeLoRaParametersReg(SX1278_t *module);
-void changeMode(SX1278_t *module, Lora_Mode_t mode);
+void writeLoRaParametersReg(SX1278_t *loRa);
+void changeMode(SX1278_t *module, spi_mode_t mode);
 void initLoRaParameters(SX1278_t *module);
 uint8_t waitForRxDone(SX1278_t *loRa);
 void waitForTxEnd(SX1278_t *loRa);
@@ -414,7 +491,7 @@ void receive(SX1278_t *loRa);
 void transmit(SX1278_t *loRa);
 void validateSettings(SX1278_t *loRa);
 SX1278_t* loRaInit(SPI_HandleTypeDef *spi);
-void configureLoRaRx(SX1278_t *loRa, Lora_Mode_t mode);
+void configureLoRaRx(SX1278_t *loRa, spi_mode_t);
 void sx1278Reset(SX1278_t *loRa);
 // for two sx1276 modules
 uint8_t readReg(SX1276_HW_t *hw, uint8_t address);
@@ -431,4 +508,36 @@ void startRxContinuous(SX1276_HW_t *hw, uint8_t payloadLenght);
 uint8_t readWhenDataArrive(LORA_t *loRa);
 uint8_t startTransmition(LORA_t *loRa);
 LORA_t* loRa_Init(SPI_HandleTypeDef *spi1,SPI_HandleTypeDef *spi2);
+
+//////////////FSK functions///////////////////////////
+
+
+FSK_t* fsk_Init(SPI_HandleTypeDef *spi1,SPI_HandleTypeDef *spi2);
+
+void setFSKLowFreqModeReg(SX1278_t *module, OPERATING_MODE_t mode);
+
+void setRFFrequencyReg_fsk(SX1278_t *module);
+
+void writeFSKparametersReg(SX1278_t *fsk);
+
+void changeMode_fsk(SX1278_t *fsk, spi_mode_t mode);
+
+void setFreqReg_fsk(SX1276_HW_t *hw, uint32_t frequency);
+
+void writeFSKParams(FSK_t *fsk);
+
+void setRegPacketConfig_fsk(SX1278_t *module);
+
+void setPreambleParameters_fsk(SX1278_t *module);
+
+void fsk_config(SX1276_HW_t *hw, uint32_t frec);
+
+uint16_t set_fsk_tx_mode(FSK_t *fsk);
+
+uint8_t set_fsk_rx_mode(FSK_t *fsk);
+
+void prefill_fifo_fsk(FSK_t *fsk);
+
+
+
 #endif

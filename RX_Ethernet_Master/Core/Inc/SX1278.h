@@ -179,7 +179,7 @@
 #define  RegSeqConfig2      	0x37
 #define  RegTimerResol      	0x38
 #define  RegTimer1Coef      	0x39
-#define  RegSyncWord			0x39
+#define  LR_RegSyncWord			0x39
 #define  RegTimer2Coef      	0x3a
 #define  RegImageCal            0x3b
 #define  RegTemp                0x3c

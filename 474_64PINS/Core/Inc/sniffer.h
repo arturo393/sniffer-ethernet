@@ -68,13 +68,12 @@ typedef struct {
 	Function_t function;
 	uint8_t id;
 	I2C_HandleTypeDef *i2c;
-	//SX1278_t *loRaTx;
-	//SX1278_t *loRaRx;
 	SX1278_t *loRa;
 	//UART_t *serial; //sacado
 	UART_t *serial_lora;
 	UART_t *serial_config;
 	LORA_t *lora;
+	FSK_t *fsk;
 	uint8_t eth_bufRX[1024];
 	uint8_t eth_lenRX;
 } Sniffer_t;

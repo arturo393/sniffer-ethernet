@@ -176,6 +176,7 @@ void processReceivedLoRa(Sniffer_t *sniffer) {
 			data_enviar[i] = (uint8_t) dataReceived[DATA_START_INDEX + i];
 
 		eth_transmit(socket_0_register, data_enviar, size);
+
 	} else {
 		// Send response via LoRa
 		uint8_t size = dataReceived[DATA_LENGHT1_INDEX];
@@ -466,15 +467,15 @@ uint8_t readEepromData(Sniffer_t *s, EEPROM_SECTOR_t sector) {
 		break;
 	case BANDWITH:
 		loRa->bw = readByte(i2c, K24C02_PAGE_ADDR(0), BW_OFFSET);
-		if (loRa->bw < LORABW_7_8KHZ || loRa->bw > LORABW_500KHZ) {
-			loRa->bw = LORABW_62_5KHZ;
+		if (loRa->bw < BW_7_8KHZ || loRa->bw > BW_500KHZ) {
+			loRa->bw = BW_62_5KHZ;
 			result = 1; // Set result to 1 (error).
 		}
 		break;
 	case CODING_RATE:
 		loRa->cr = readByte(i2c, K24C02_PAGE_ADDR(0), CR_OFFSET);
-		if (loRa->cr < LORA_CR_4_5 || loRa->cr > LORA_CR_4_8) {
-			loRa->cr = LORA_CR_4_6;
+		if (loRa->cr < CR_4_5 || loRa->cr > CR_4_8) {
+			loRa->cr = CR_4_6;
 			result = 1; // Set result to 1 (error).
 		}
 		break;
@@ -564,16 +565,16 @@ HAL_StatusTypeDef saveData(Sniffer_t *s, EEPROM_SECTOR_t sector) {
 	case BANDWITH:
 		page = K24C02_PAGE_ADDR(0);
 		offset = BW_OFFSET;
-		if (loRa->bw < LORABW_7_8KHZ || loRa->bw > LORABW_500KHZ)
-			loRa->bw = LORABW_62_5KHZ;
+		if (loRa->bw < BW_7_8KHZ || loRa->bw > BW_500KHZ)
+			loRa->bw = BW_62_5KHZ;
 		data = (uint8_t*) &(loRa->bw);
 		dataLen = sizeof(loRa->bw);
 		break;
 	case CODING_RATE:
 		page = K24C02_PAGE_ADDR(0);
 		offset = CR_OFFSET;
-		if (loRa->cr < LORA_CR_4_5 || loRa->cr > LORA_CR_4_8)
-			loRa->cr = LORA_CR_4_6;
+		if (loRa->cr < CR_4_5 || loRa->cr > CR_4_8)
+			loRa->cr = CR_4_6;
 		data = (uint8_t*) &loRa->cr;
 		dataLen = sizeof(loRa->cr);
 		break;

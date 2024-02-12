@@ -1,9 +1,0 @@
-../Core/Src/module.c:20:6:toneUhfInit	1
-../Core/Src/module.c:29:9:vladInit	1
-../Core/Src/module.c:67:11:serverInit	2
-../Core/Src/module.c:82:9:encodeVladToLtel	2
-../Core/Src/module.c:111:6:module_init	1
-../Core/Src/module.c:115:6:pa_sample_timer3_init	1
-../Core/Src/module.c:3:6:pa_init	1
-../Core/Src/module.c:132:6:module_pa_state_update	7
-../Core/Src/module.c:148:9:decodeVladMeasurements	2

@@ -283,31 +283,21 @@ int main(void) {
 
 
 	s = sniffer(&hi2c3, adcMA);
-	s->serial_lora = uart(&huart1);
-	s->lora = loRa_Init(&hspi1, &hspi2);
 
-	readEepromData(s, SPREAD_FACTOR);
-	readEepromData(s, BANDWITH);
-	readEepromData(s, CODING_RATE);
-	readEepromData(s, UPLINK);
-	readEepromData(s, DOWNLINK);
+	s->fsk = fsk_Init(&hspi1, &hspi2);
 
-	s->lora->bw = LORABW_125KHZ;
-	s->lora->dfreq = 150000000;
-	s->lora->ufreq = 170000000;
-	s->lora->sf = SF_7;
-	s->lora->cr = LORA_CR_4_5;
-	s->id = 8;
+
+
 
 	// lora config
-	writeCommon(s->lora->txhw);
-	writeCommon(s->lora->rxhw);
-	setTxMode(s->lora->txhw, s->lora->ufreq);
-	setRxMode(s->lora->rxhw, s->lora->dfreq);
-	writeLoRaParams(s->lora);
-	startRxContinuous(s->lora->rxhw, RECEIVE_PAYLOAD_LENGTH);
+	// writeCommon(s->lora->txhw);
+	//writeCommon(s->lora->rxhw);
+	// setTxMode(s->lora->txhw, s->lora->ufreq);
+	// setRxMode(s->lora->rxhw, s->lora->dfreq);
+	// writeLoRaParams(s->lora);
+	// startRxContinuous(s->lora->rxhw, RECEIVE_PAYLOAD_LENGTH);
 	//
-
+     /*
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, 1); // KA
 	// RS485/N232 LTC2873
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // NRESET W5500
@@ -326,15 +316,14 @@ int main(void) {
 
 	//SPI ETHERNET
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1); // CS HIGH DISABLE
-
+    */
 	//-----------------------------------------------------------
 
 	//configuración fisicas del chip//
-	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
-			(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
+	/*
+	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
 	HAL_Delay(500);
-	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,
-			(uint8_t*) &_PHYCFGR_NRST, sizeof(_PHYCFGR_NRST));
+	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,(uint8_t*) &_PHYCFGR_NRST, sizeof(_PHYCFGR_NRST));
 	HAL_Delay(200);
 
 
@@ -343,19 +332,27 @@ int main(void) {
 
 	socket_reg_config(buffer, S_MR, S_PORT, S_DHAR, S_DPORT, S_MMS, S_TTL,
 			S_RXBUF_SIZE, S_TXBUF_SIZE, S_CR_open, S_CR_listen);
+   */
 
-	HAL_UART_Receive_IT(s->serial_lora->handler, s->serial_lora->data, 1);
 
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+
 	while (1) {
 
-		readWhenDataArrive(s->lora);
-		processReceived(s);
+		//readWhenDataArrive(s->lora);
+		//startTransmition(loRa);
+		//processReceived(s);
 
+
+		set_fsk_tx_mode(s->fsk);
+		set_fsk_rx_mode(s->fsk);
+
+
+		/*
 		// LEER REGISTRO IR
 		eth_read_reg(socket_0_register,  S_IR_OFFSET, &s_IR, sizeof(s_IR));
 		if (s_IR & Sn_IR_MASK) {
@@ -371,7 +368,7 @@ int main(void) {
 				ir_reset = Sn_DISCONNECT;
 			}
 			if ((s_IR & Sn_RECEIVE)) {
-					/* readDataFromEthernet */
+					/* readDataFromEthernet
 					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,s->eth_bufRX);
 					socket_cmd_cfg(socket_0_register, S_CR_RECV);
 					ir_reset = Sn_RECEIVE;
@@ -401,7 +398,9 @@ int main(void) {
 
 		/* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+	/* USER CODE END 3
+
+	*/
 }
 
 /**
