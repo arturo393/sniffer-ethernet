@@ -218,7 +218,7 @@
 
 #define RX_FSK_DONE                 (0x1 << 6)
 
-#define PREAMBLEDETECT              (0X1 << 1)
+#define PREAMBLEDETECT              (0x1 << 1)
 #define START_CONDITION_BIT         (0x1 << 7)
 #define PACKET_FORMAT (0<<7)
 #define DC_FREE (0<<5)
@@ -226,6 +226,17 @@
 #define CRC_AUTO_CLEAR_OFF (0<<3)
 #define ADDRESS_FILTERING (0<<1)
 #define CRC_WHITHENING_TYPE (0<<1)
+
+
+
+#define RestartRXONCOLLISION          (0x1 << 7)
+#define RESTARTRX_WITHOUT_PLLOCK      (0x0 << 6)
+#define RESTARTRX_WITH_PLLOCK         (0x0 << 5)
+#define AFC_AUTO_ON                   (0x1 << 4)
+#define AGC_AUTO_ON                   (0x1 << 3)
+#define RX_TRIGGER                    (0X6 << 0)
+
+
 
 
 #define LORA_RX_BUFFER_SIZE 30
@@ -292,7 +303,7 @@ typedef enum spi_Mode{
 #define MODULATIONFSK (0x00 |0 << 5)
 #define LOW_FREQUENCY_MODE (0x00 |1 << 3)
 #define IRQ1_MODEREADY (0x00|1<<7)
-
+#define IRQ1_RSSI (0x00|1<<3)
 
 
 
@@ -535,6 +546,8 @@ void fsk_config(SX1276_HW_t *hw, uint32_t frec);
 uint16_t set_fsk_tx_mode(FSK_t *fsk);
 
 uint8_t set_fsk_rx_mode(FSK_t *fsk);
+
+void set_fsk_level( SX1276_HW_t *hw,uint8_t level);
 
 void prefill_fifo_fsk(FSK_t *fsk);
 
