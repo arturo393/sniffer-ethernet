@@ -220,8 +220,8 @@ void fsk_config(SX1276_HW_t *hw, uint32_t frec) {
 	uint8_t cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | SLEEP;
 	writeReg(hw, RegOpMode, &cmd, 1);
 
-    uint8_t RXCONFIG = RestartRXONCOLLISION | RESTARTRX_WITHOUT_PLLOCK | RESTARTRX_WITH_PLLOCK | AFC_AUTO_ON
-		    | AGC_AUTO_ON | RX_TRIGGER;
+	const uint8_t RXCONFIG = RestartRXONCOLLISION | RESTARTRX_WITHOUT_PLLOCK
+			| RESTARTRX_WITH_PLLOCK | AFC_AUTO_ON | AGC_AUTO_ON | RX_TRIGGER;
 
 	static const uint8_t RF96configRegs[] = { RegOpMode, 0x00, // FSK mode, high-freq regs, sleep mode
 			RegOpMode, 0x00, // FSK mode, high-freq regs, sleep mode
@@ -302,7 +302,6 @@ void fsk_config(SX1276_HW_t *hw, uint32_t frec) {
 	 */
 
 	// Configuración frecuencia:
-
 	while (frec < 100000000)
 		frec *= 10;
 	uint32_t frf = (frec << 2) / (32000000L >> 11);
@@ -406,7 +405,47 @@ void setRxMode(SX1276_HW_t *hw, uint32_t freq) {
 	setMode(hw, freq, 0x00, FLAGSMOODERX);
 }
 
-void set_fsk_level( SX1276_HW_t *hw,uint8_t level) {
+uint8_t is_irqflag1_enable(SX1276_HW_t *hw, uint8_t irq_bit) {
+	uint32_t PREAMBLE_DETECT_TIMEOUT = 5000;
+	uint32_t timeStart = HAL_GetTick();
+	uint8_t irgflags = readReg(hw, RegIrqFlags1);
+
+	while ((irgflags & irq_bit) == 0) {
+		irgflags = readReg(hw, RegIrqFlags1);
+		if ((HAL_GetTick() - timeStart) > PREAMBLE_DETECT_TIMEOUT)
+			return (0);
+
+	}
+
+	irgflags = irq_bit;
+	writeReg(hw, RegIrqFlags1, &irgflags, 1);
+	return (1);
+
+}
+
+uint8_t is_irqflag2_enable(SX1276_HW_t *hw, uint8_t irq_bit) {
+	uint32_t PREAMBLE_DETECT_TIMEOUT = 5000;
+	uint32_t timeStart = HAL_GetTick();
+	uint8_t irgflags = readReg(hw, RegIrqFlags2);
+
+	while ((irgflags & irq_bit) == 0) {
+		irgflags = readReg(hw, RegIrqFlags2);
+		if ((HAL_GetTick() - timeStart) > PREAMBLE_DETECT_TIMEOUT)
+			return (0);
+
+	}
+
+	irgflags = irq_bit;
+	writeReg(hw, RegIrqFlags1, &irgflags, 1);
+	return (1);
+
+}
+void set_fsk_mode(SX1276_HW_t *hw, uint8_t mode) {
+	uint8_t OpMode = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | mode;
+	writeReg(hw, RegOpMode, &OpMode, 1);
+}
+
+void set_fsk_level(SX1276_HW_t *hw, uint8_t level) {
 	uint8_t cmd = 0;
 	if (level < 2)
 		level = 2;
@@ -439,17 +478,16 @@ uint16_t set_fsk_tx_mode(FSK_t *fsk) {
 
 	set_fsk_level(hw, 20);
 
-	cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | FSTX;
-	writeReg(hw, RegOpMode, &cmd, 1);
+	set_fsk_mode(hw, FSTX);
 
-	while ((readReg(hw, RegIrqFlags1) & IRQ1_MODEREADY) == 0);
+	while (!is_irqflag1_enable(hw, IRQ1_MODEREADY))
+		;
 
-	uint8_t tx_data[] = {0xC, 0xAA, 0xAA, 0xAA, 0xAA,0xAA,0x2D,0x2A, 0x22, 0x33, 0x44, 0x55 };
+	uint8_t tx_data[] = { 0xC, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0x2D, 0x2A, 0x22,
+			0x33, 0x44, 0x55 };
 	fsk->txSize = sizeof(tx_data);
 
 	reg_fifo_thresh = readReg(hw, RegFifoThresh);
-
-
 	uint8_t read_irqFlags = readReg(hw, RegIrqFlags2);
 
 	for (int i = 0; i < fsk->txSize; i++) {
@@ -459,85 +497,60 @@ uint16_t set_fsk_tx_mode(FSK_t *fsk) {
 
 	}
 
-	//writeReg(hw, RegFIFO, tx_data, sizeof(tx_data));
+	set_fsk_mode(hw, TX);
 
-	cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | TX;
-	writeReg(hw, RegOpMode, &cmd, 1);
 
-	/*
-	 reg_fifo_thresh = readReg(hw, RegFifoThresh);
-	 reg_fifo_thresh |= (1 << 7);
-	 writeReg(hw, RegFifoThresh, &reg_fifo_thresh, 1);
-	 reg_fifo_thresh = 0;
-	 reg_fifo_thresh = readReg(hw, RegFifoThresh);
-	 */
-
-	uint8_t irqFlags = 0;
-	while (1) {
-		irqFlags = readReg(hw, RegIrqFlags2);
-		if (irqFlags & FifoEmpty_IRQ) {
-			int timeEnd = HAL_GetTick();
-			uint8_t cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | SLEEP;
-			writeReg(hw, RegOpMode, &cmd, 1);
-			uint8_t lastTxTime = timeEnd - timeStart;
-			return (fsk->txSize);
-		}
-		if (HAL_GetTick() - timeStart > FSK_SEND_TIMEOUT) {
-			return (0);
-		}
-	}
 
 }
 
-
+void set_fsk_afc(SX1276_HW_t *hw) {
+	static uint8_t RF96lnaMap[] = { 0, 0, 6, 12, 24, 36, 48, 48 };
+	uint8_t rssi = readReg(hw, RegRssiValue);
+	int16_t thresh = readReg(hw, RegRssiThresh);
+	uint8_t snr = rssi > thresh ? 0 : (thresh - rssi) / 2;
+	uint8_t lna = RF96lnaMap[(readReg(hw, RegLna) >> 5) & 0x7];
+	uint16_t f = (uint16_t) readReg(hw, RegAfcMsb);
+	f = (f << 8) | (uint16_t) readReg(hw, RegAfcLsb);
+	uint32_t afc = (uint32_t) f * 61;
+}
 
 uint8_t set_fsk_rx_mode(FSK_t *fsk) {
 
 	SX1276_HW_t *hw = fsk->rxhw;
-	uint8_t readFIFO[64] = {0};
-	uint8_t regflags = 0;
+	uint8_t readFIFO[64] = { 0 };
+	uint8_t irqFlags1 = 0;
+
 	fsk_config(hw, DOWNLINK_FREQ);
-	uint8_t cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | FSRX;
-	writeReg(hw, RegOpMode, &cmd, 1);
-    HAL_Delay(10);
-	cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | RX;
-	writeReg(hw, RegOpMode, &cmd, 1);
-	static uint8_t RF96lnaMap[] = { 0, 0, 6, 12, 24, 36, 48, 48 };
-    uint8_t rssi = readReg(hw,RegRssiValue);
-    int16_t thresh = readReg(hw,RegRssiThresh);
-    uint8_t snr = rssi > thresh ? 0 : (thresh-rssi)/2;
-    uint8_t lna = RF96lnaMap[ (readReg(hw,RegLna) >> 5) & 0x7 ];
-    uint16_t f = (uint16_t)readReg(hw,RegAfcMsb);
-    f = (f<<8) | (uint16_t)readReg(hw,RegAfcLsb);
-    uint32_t afc = (uint32_t)f * 61;
+	set_fsk_mode(hw, RX);
+	set_fsk_afc(hw);
 
-
-	while ((regflags & IRQ1_RSSI) == 0)
-		regflags = readReg(hw,RegIrqFlags1);
-
-	cmd = regflags  | IRQ1_RSSI;
-	writeReg(hw, RegIrqFlags1, &cmd, 1);
-
-	regflags = readReg(hw,RegIrqFlags1);
-
-	uint8_t regflags2 = readReg(hw,RegIrqFlags2);
-	if (!(regflags & PREAMBLEDETECT)){
+	if (!is_irqflag1_enable(hw, IRQ1_RSSI))
 		return (0);
-	}
 
-	for(uint8_t i = 0;i<64; i++)
+	if (!is_irqflag1_enable(hw, PREAMBLEDETECT))
+		return (0);
+
+	if (!is_irqflag1_enable(hw, SyncAddressMatch))
+		return (0);
+
+
+
+
+	for (uint8_t i = 0; i < 64; i++)
 		readFIFO[i] = readReg(hw, RegFIFO);
 
-	cmd = regflags | PREAMBLEDETECT;
-	writeReg(hw, RegIrqFlags1, &cmd,1);
 	return (1);
-
 
 }
 
-
-
-
+/*
+ reg_fifo_thresh = readReg(hw, RegFifoThresh);
+ reg_fifo_thresh |= (1 << 7);
+ writeReg(hw, RegFifoThresh, &reg_fifo_thresh, 1);
+ reg_fifo_thresh = 0;
+ reg_fifo_thresh = readReg(hw, RegFifoThresh);
+ writeReg(hw, RegFIFO, tx_data, sizeof(tx_data));
+ */
 
 void writeLoRaParams(LORA_t *loRa) {
 	uint8_t headerMode;

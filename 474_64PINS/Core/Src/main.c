@@ -247,7 +247,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
-	 uint32_t keep_alive_counter = HAL_GetTick();
+	uint32_t keep_alive_counter = HAL_GetTick();
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -281,13 +281,9 @@ int main(void) {
 	MX_USART3_UART_Init();
 	/* USER CODE BEGIN 2 */
 
-
 	s = sniffer(&hi2c3, adcMA);
 
 	s->fsk = fsk_Init(&hspi1, &hspi2);
-
-
-
 
 	// lora config
 	// writeCommon(s->lora->txhw);
@@ -297,49 +293,49 @@ int main(void) {
 	// writeLoRaParams(s->lora);
 	// startRxContinuous(s->lora->rxhw, RECEIVE_PAYLOAD_LENGTH);
 	//
-     /*
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, 1); // KA
-	// RS485/N232 LTC2873
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // NRESET W5500
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // NRESET W5500
-	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 1); // NSHD
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1); // S485_N232
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 0); // DE485_F232
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // NRE485
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, 0); // NTE485
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, 0); // LB
-	//HAL_UART_Receive_IT(&huart1, re, 50); sacado
-	sw = HAL_GPIO_ReadPin(DIN2_GPIO_Port, DIN2_Pin);
+	/*
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, 1); // KA
+	 // RS485/N232 LTC2873
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // NRESET W5500
+	 HAL_Delay(2);
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // NRESET W5500
+	 //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 1); // NSHD
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1); // S485_N232
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 0); // DE485_F232
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // NRE485
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, 0); // NTE485
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, 0); // LB
+	 //HAL_UART_Receive_IT(&huart1, re, 50); sacado
+	 sw = HAL_GPIO_ReadPin(DIN2_GPIO_Port, DIN2_Pin);
 
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, sw); // S485_N232
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, sw); // S485_N232
 
-	//SPI ETHERNET
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1); // CS HIGH DISABLE
-    */
+	 //SPI ETHERNET
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1); // CS HIGH DISABLE
+	 */
 	//-----------------------------------------------------------
-
 	//configuración fisicas del chip//
 	/*
-	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
-	HAL_Delay(500);
-	eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,(uint8_t*) &_PHYCFGR_NRST, sizeof(_PHYCFGR_NRST));
-	HAL_Delay(200);
+	 eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,(uint8_t*) &_PHYCFGR_RST, sizeof(_PHYCFGR_RST));
+	 HAL_Delay(500);
+	 eth_write_reg(COMMON_REG_OFFSET, PHYCFGR_RST_OFFSET,(uint8_t*) &_PHYCFGR_NRST, sizeof(_PHYCFGR_NRST));
+	 HAL_Delay(200);
 
 
-	//configuración de registros comunes
-	common_reg_config(buffer, mode, gar, sub_r, shar, sipr);
+	 //configuración de registros comunes
+	 common_reg_config(buffer, mode, gar, sub_r, shar, sipr);
 
-	socket_reg_config(buffer, S_MR, S_PORT, S_DHAR, S_DPORT, S_MMS, S_TTL,
-			S_RXBUF_SIZE, S_TXBUF_SIZE, S_CR_open, S_CR_listen);
-   */
-
-
+	 socket_reg_config(buffer, S_MR, S_PORT, S_DHAR, S_DPORT, S_MMS, S_TTL,
+	 S_RXBUF_SIZE, S_TXBUF_SIZE, S_CR_open, S_CR_listen);
+	 */
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+
+	uint32_t tx_ticks = HAL_GetTick();
+	uint32_t tx_timeout = 9000;
 
 	while (1) {
 
@@ -347,60 +343,64 @@ int main(void) {
 		//startTransmition(loRa);
 		//processReceived(s);
 
-
 		set_fsk_tx_mode(s->fsk);
+
+		//while (!is_irqflag2_enable(hw, FifoEmpty_IRQ))
+		//	;
+
+
+
 		set_fsk_rx_mode(s->fsk);
 
-
 		/*
-		// LEER REGISTRO IR
-		eth_read_reg(socket_0_register,  S_IR_OFFSET, &s_IR, sizeof(s_IR));
-		if (s_IR & Sn_IR_MASK) {
-			uint8_t ir_reset;
-			if (s_IR & Sn_CONNECT){  // SOCK_ESTABLISHED
-				socket_cmd_cfg(socket_0_register, S_CR_CONNECT);
-				ir_reset = Sn_CONNECT;
-			}
-			if (s_IR & Sn_DISCONNECT) { //FIN/ACK
-				socket_cmd_cfg(socket_0_register, S_CR_DISCONECT);
-				socket_cmd_cfg(socket_0_register, S_CR_OPEN);
-				socket_cmd_cfg(socket_0_register, S_CR_LISTEN);
-				ir_reset = Sn_DISCONNECT;
-			}
-			if ((s_IR & Sn_RECEIVE)) {
-					/* readDataFromEthernet
-					s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,s->eth_bufRX);
-					socket_cmd_cfg(socket_0_register, S_CR_RECV);
-					ir_reset = Sn_RECEIVE;
-			}
-			eth_write_reg(socket_0_register, S_IR_OFFSET, (uint8_t*) &ir_reset,
-					sizeof(ir_reset));
+		 // LEER REGISTRO IR
+		 eth_read_reg(socket_0_register,  S_IR_OFFSET, &s_IR, sizeof(s_IR));
+		 if (s_IR & Sn_IR_MASK) {
+		 uint8_t ir_reset;
+		 if (s_IR & Sn_CONNECT){  // SOCK_ESTABLISHED
+		 socket_cmd_cfg(socket_0_register, S_CR_CONNECT);
+		 ir_reset = Sn_CONNECT;
+		 }
+		 if (s_IR & Sn_DISCONNECT) { //FIN/ACK
+		 socket_cmd_cfg(socket_0_register, S_CR_DISCONECT);
+		 socket_cmd_cfg(socket_0_register, S_CR_OPEN);
+		 socket_cmd_cfg(socket_0_register, S_CR_LISTEN);
+		 ir_reset = Sn_DISCONNECT;
+		 }
+		 if ((s_IR & Sn_RECEIVE)) {
+		 /* readDataFromEthernet
+		 s->eth_lenRX = read_socket_n_rx_buffer(socket_0_register,s->eth_bufRX);
+		 socket_cmd_cfg(socket_0_register, S_CR_RECV);
+		 ir_reset = Sn_RECEIVE;
+		 }
+		 eth_write_reg(socket_0_register, S_IR_OFFSET, (uint8_t*) &ir_reset,
+		 sizeof(ir_reset));
 
-		}
-
-
+		 }
 
 
-        // lectura status del socket
-		eth_read_reg(socket_0_register,  S_SR_OFFSET, &s_SR, sizeof(s_SR));
 
 
-		if (HAL_GetTick() - keep_alive_counter > 1000)
-		              keep_alive_counter = HAL_GetTick();
-		          else {
-		              if (HAL_GetTick() - keep_alive_counter > 50)
-		                HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_RESET);
-		              else
-		                HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_SET);
-		          }
+		 // lectura status del socket
+		 eth_read_reg(socket_0_register,  S_SR_OFFSET, &s_SR, sizeof(s_SR));
 
-		/* USER CODE END WHILE */
+
+		 if (HAL_GetTick() - keep_alive_counter > 1000)
+		 keep_alive_counter = HAL_GetTick();
+		 else {
+		 if (HAL_GetTick() - keep_alive_counter > 50)
+		 HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_RESET);
+		 else
+		 HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_SET);
+		 }
+
+		 /* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3
 
-	*/
+	 */
 }
 
 /**

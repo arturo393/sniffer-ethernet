@@ -236,7 +236,7 @@
 #define AGC_AUTO_ON                   (0x1 << 3)
 #define RX_TRIGGER                    (0X6 << 0)
 
-
+#define SyncAddressMatch              (0x1 << 0)
 
 
 #define LORA_RX_BUFFER_SIZE 30
