@@ -236,7 +236,7 @@
 #define AGC_AUTO_ON                   (0x1 << 3)
 #define RX_TRIGGER                    (0X6 << 0)
 
-#define SyncAddressMatch              (0x1 << 0)
+#define SYNCADDRESSMATCH              (0x1 << 0)
 
 
 #define LORA_RX_BUFFER_SIZE 30
@@ -543,7 +543,7 @@ void setPreambleParameters_fsk(SX1278_t *module);
 
 void fsk_config(SX1276_HW_t *hw, uint32_t frec);
 
-uint16_t set_fsk_tx_mode(FSK_t *fsk);
+void set_fsk_tx_mode(FSK_t *fsk);
 
 uint8_t set_fsk_rx_mode(FSK_t *fsk);
 

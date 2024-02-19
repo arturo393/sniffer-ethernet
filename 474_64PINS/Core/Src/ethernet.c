@@ -227,7 +227,8 @@ uint8_t read_socket_n_rx_buffer(uint8_t sn_reg, uint8_t *data_rcv) {
 	len_rx = read_socket_n_rx_buffer_len(sn_reg);
 
 	if (len_rx <= 0)
-		return (0);	s_RX_RD_addr = read_socket_n_rx_buffer_read_addr(sn_reg);
+		return (0);
+	s_RX_RD_addr = read_socket_n_rx_buffer_read_addr(sn_reg);
 	eth_read_reg(sn_reg + S_N_RX_OFFSET, s_RX_RD_addr, data_rcv, len_rx);
 
 	s_RX_RD_addr_updated = s_RX_RD_addr + len_rx;

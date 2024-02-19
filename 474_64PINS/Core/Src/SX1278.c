@@ -217,17 +217,16 @@ void setRFFrequencyReg_FSK(SX1278_t *module) {
 
 void fsk_config(SX1276_HW_t *hw, uint32_t frec) {
 
-	uint8_t cmd = FSK_OOK_MODE | MODULATIONFSK | HIGH_FREQUENCY_MODE | SLEEP;
+	uint8_t cmd = FSK_OOK_MODE | MODULATIONFSK | LOW_FREQUENCY_MODE | SLEEP; //Modo de Operación
 	writeReg(hw, RegOpMode, &cmd, 1);
 
 	const uint8_t RXCONFIG = RestartRXONCOLLISION | RESTARTRX_WITHOUT_PLLOCK
 			| RESTARTRX_WITH_PLLOCK | AFC_AUTO_ON | AGC_AUTO_ON | RX_TRIGGER;
 
-	static const uint8_t RF96configRegs[] = { RegOpMode, 0x00, // FSK mode, high-freq regs, sleep mode
-			RegOpMode, 0x00, // FSK mode, high-freq regs, sleep mode
+	static const uint8_t RF96configRegs[] = {
 			RegBitRateMsb, 0x02, RegBitRateLsb, 0x8A, // Bit rate: 49230bps
 			RegFdevMsb, 0x03, RegFdevLsb, 0x4E, // 51.5kHzFdev -> modulation index = 2.1
-			RegPaConfig, 0xF0 + 11, // use PA_BOOST, start at 13dBm
+			RegPaConfig,0xFB, //(0x00<<7) | (0x04<<4) |(0x0f<<0) , // MAX OUTPUT POWER use PA_BOOST, start at 13dBm
 			RegPaRamp, 0x09, // no shaping, 40us TX rise/fall
 			RegOcp, 0x32, // Over-current protection @150mA
 			RegLna, 0x20, // max LNA gain, no boost
@@ -244,7 +243,7 @@ void fsk_config(SX1276_HW_t *hw, uint32_t frec) {
 			RegRxTimeout3, 0x00, // No RX timeout if no sync
 			RegRxDelay, 0x02, // delay 8 bits after RX end before restarting RX
 			RegOsc, 0x07, // no clock out
-			RegPreambleMsb, 0x00, RegPreambleLsb, 0x05, // preamble 5 bytes
+			RegPreambleMsb, 0x00, RegPreambleLsb, 0xff, // preamble 255 bytes
 			RegSyncConfig, 0x12, // no auto-restart, 0xAA preamble, enable 3 byte sync
 			RegSyncValue1, 0xAA, // sync1: same as preamble, gets us additional check
 			RegSyncValue2, 0x2D, RegSyncValue3, 0x2A, // sync2 (fixed), and sync3 (network group)
@@ -468,20 +467,21 @@ void set_fsk_level(SX1276_HW_t *hw, uint8_t level) {
 	}
 }
 
-uint16_t set_fsk_tx_mode(FSK_t *fsk) {
+void set_fsk_tx_mode(FSK_t *fsk) {
 	int timeStart = HAL_GetTick();
 	SX1276_HW_t *hw = fsk->txhw;
 	uint8_t cmd;
 	uint8_t reg_fifo_thresh;
 
-	fsk_config(hw, DOWNLINK_FREQ);
+	fsk_config(hw, DOWNLINK_FREQ); //Modo SLEEP para las configuraciones
 
 	set_fsk_level(hw, 20);
 
-	set_fsk_mode(hw, FSTX);
+	set_fsk_mode(hw, STANDBY); // Para preparar los estados de transmisión
 
-	while (!is_irqflag1_enable(hw, IRQ1_MODEREADY))
-		;
+	set_fsk_mode(hw, FSTX); //Sintetizado de la frecuencia de transmisión
+
+	while (!is_irqflag1_enable(hw, IRQ1_MODEREADY));
 
 	uint8_t tx_data[] = { 0xC, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0x2D, 0x2A, 0x22,
 			0x33, 0x44, 0x55 };
@@ -497,10 +497,32 @@ uint16_t set_fsk_tx_mode(FSK_t *fsk) {
 
 	}
 
-	set_fsk_mode(hw, TX);
+	uint8_t readFifo = readReg(hw,RegFIFO);
 
+	set_fsk_mode(hw, TX); //Transmisión
+}
+/////////////////////////////////////////////////////////////////////////
+uint8_t set_fsk_rx_mode(FSK_t *fsk){
+	SX1276_HW_t *hw = fsk->rxhw;
+	uint8_t readFIFO[64] = { 0 };
+	uint8_t irqFlags1 = 0;
 
+	fsk_config(hw, DOWNLINK_FREQ);//Modo SLEEP para las configuraciones
 
+	set_fsk_mode(hw, STANDBY); //Para preparar el proceso de recepción
+
+	set_fsk_mode(hw, FSRX); //Sintetizado de la frecuencia de recepción
+	set_fsk_afc(hw);
+
+	set_fsk_mode(hw, RX);//Recepción
+	if (!is_irqflag1_enable(hw, IRQ1_RSSI))
+		return (0);
+
+	if (!is_irqflag1_enable(hw, PREAMBLEDETECT))
+		return (0);
+	for (uint8_t i = 0; i < 64; i++)
+		readFIFO[i] = readReg(hw, RegFIFO); //Se lee FIFO FSK 64 bytes
+	return (1);
 }
 
 void set_fsk_afc(SX1276_HW_t *hw) {
@@ -514,34 +536,7 @@ void set_fsk_afc(SX1276_HW_t *hw) {
 	uint32_t afc = (uint32_t) f * 61;
 }
 
-uint8_t set_fsk_rx_mode(FSK_t *fsk) {
 
-	SX1276_HW_t *hw = fsk->rxhw;
-	uint8_t readFIFO[64] = { 0 };
-	uint8_t irqFlags1 = 0;
-
-	fsk_config(hw, DOWNLINK_FREQ);
-	set_fsk_mode(hw, RX);
-	set_fsk_afc(hw);
-
-	if (!is_irqflag1_enable(hw, IRQ1_RSSI))
-		return (0);
-
-	if (!is_irqflag1_enable(hw, PREAMBLEDETECT))
-		return (0);
-
-	if (!is_irqflag1_enable(hw, SyncAddressMatch))
-		return (0);
-
-
-
-
-	for (uint8_t i = 0; i < 64; i++)
-		readFIFO[i] = readReg(hw, RegFIFO);
-
-	return (1);
-
-}
 
 /*
  reg_fifo_thresh = readReg(hw, RegFifoThresh);

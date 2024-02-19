@@ -348,8 +348,6 @@ int main(void) {
 		//while (!is_irqflag2_enable(hw, FifoEmpty_IRQ))
 		//	;
 
-
-
 		set_fsk_rx_mode(s->fsk);
 
 		/*
@@ -383,24 +381,22 @@ int main(void) {
 
 		 // lectura status del socket
 		 eth_read_reg(socket_0_register,  S_SR_OFFSET, &s_SR, sizeof(s_SR));
+		 */
 
+		if (HAL_GetTick() - keep_alive_counter > 1000)
+			keep_alive_counter = HAL_GetTick();
+		else {
+			if (HAL_GetTick() - keep_alive_counter > 50)
+				HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_RESET);
+			else
+				HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_SET);
+		}
 
-		 if (HAL_GetTick() - keep_alive_counter > 1000)
-		 keep_alive_counter = HAL_GetTick();
-		 else {
-		 if (HAL_GetTick() - keep_alive_counter > 50)
-		 HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_RESET);
-		 else
-		 HAL_GPIO_WritePin(KA_GPIO_Port, KA_Pin, GPIO_PIN_SET);
-		 }
-
-		 /* USER CODE END WHILE */
+		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3
-
-	 */
+	/* USER CODE END 3 */
 }
 
 /**
